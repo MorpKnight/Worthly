@@ -10,88 +10,135 @@ import SwiftUI
 struct AssetView: View {
     let data: SampleFinanceData
 
+    @State private var accounts: [Account]
+    @State private var sbnInvestments: [SBNInvestment]
+    @State private var debts: [Debt]
+    @State private var activeEditor: AssetEditor?
+
     init(data: SampleFinanceData = .current) {
         self.data = data
+        _accounts = State(initialValue: data.accounts)
+        _sbnInvestments = State(initialValue: data.sbnInvestments)
+        _debts = State(initialValue: data.debts)
     }
 
-    private var pieSlices: [PieSlice] {
-        let accountSlices = data.accounts.enumerated().map { index, account in
-            PieSlice(
-                id: "account-\(account.id.uuidString)",
-                title: account.chartTitle,
-                amount: account.balance,
-                color: AssetChartPalette.color(at: index)
-            )
-        }
+    private var liquidAssets: Decimal {
+        accounts.reduce(0) { $0 + $1.balance }
+    }
 
-        let investmentSlices = data.sbnInvestments.enumerated().map { index, investment in
-            PieSlice(
-                id: "sbn-\(investment.id.uuidString)",
-                title: investment.name,
-                amount: investment.principal,
-                color: AssetChartPalette.color(at: data.accounts.count + index)
-            )
-        }
+    private var investmentPrincipal: Decimal {
+        sbnInvestments.reduce(0) { $0 + $1.principal }
+    }
 
-        return accountSlices + investmentSlices
+    private var totalAssets: Decimal {
+        liquidAssets + investmentPrincipal
+    }
+
+    private var totalDebt: Decimal {
+        debts.reduce(0) { $0 + $1.remainingAmount }
+    }
+
+    private var allocationSlices: [AssetAllocationSlice] {
+        [
+            AssetAllocationSlice(
+                id: "liquid-account",
+                title: "Liquid Account",
+                amount: liquidAssets,
+                color: AssetChartPalette.liquidAccount
+            ),
+            AssetAllocationSlice(
+                id: "sbn-investment",
+                title: "SBN Investment",
+                amount: investmentPrincipal,
+                color: AssetChartPalette.sbnInvestment
+            )
+        ]
+    }
+
+    private var sortedAccounts: [Account] {
+        accounts.sorted { $0.balance > $1.balance }
+    }
+
+    private var sortedSbnInvestments: [SBNInvestment] {
+        sbnInvestments.sorted { $0.principal > $1.principal }
+    }
+
+    private var sortedDebts: [Debt] {
+        debts.sorted { $0.remainingAmount > $1.remainingAmount }
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
-                TotalAssetCard(totalAsset: data.totalAssets)
+                TotalAssetCard(totalAsset: totalAssets)
 
-                AssetCompositionChart(slices: pieSlices)
+                AssetCompositionChart(slices: allocationSlices)
                     .padding(.top, 2)
 
                 AssetSectionHeader(
                     title: "Liquid Account",
-                    amount: IDRFormatting.compact(data.liquidAssets)
+                    amount: IDRFormatting.compact(liquidAssets)
                 )
 
                 VStack(spacing: 0) {
-                    ForEach(data.accounts) { account in
-                        WorthlyDisclosureRow(
-                            icon: account.type.systemImage,
-                            title: account.name,
-                            subtitle: account.type.title,
-                            value: IDRFormatting.compact(account.balance),
-                            separatorLeadingInset: 56
-                        )
+                    ForEach(sortedAccounts) { account in
+                        Button {
+                            activeEditor = .editAccount(account.id)
+                        } label: {
+                            WorthlyDisclosureRow(
+                                icon: account.type.systemImage,
+                                title: account.name,
+                                subtitle: account.type.title,
+                                value: IDRFormatting.compact(account.balance),
+                                separatorLeadingInset: 56
+                            )
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
 
                 AssetSectionHeader(
                     title: "SBN Investment",
-                    amount: IDRFormatting.compact(data.investmentPrincipal)
+                    amount: IDRFormatting.compact(investmentPrincipal)
                 )
 
                 VStack(spacing: 0) {
-                    ForEach(data.sbnInvestments) { investment in
-                        WorthlyDisclosureRow(
-                            icon: "percent",
-                            title: investment.name,
-                            subtitle: "\(IDRFormatting.percent(investment.annualInterestRate)) p.a.",
-                            value: IDRFormatting.compact(investment.principal),
-                            separatorLeadingInset: 56
-                        )
+                    ForEach(sortedSbnInvestments) { investment in
+                        Button {
+                            activeEditor = .editInvestment(investment.id)
+                        } label: {
+                            WorthlyDisclosureRow(
+                                icon: "percent",
+                                title: investment.name,
+                                subtitle: "\(IDRFormatting.percent(investment.annualInterestRate)) p.a.",
+                                value: IDRFormatting.compact(investment.principal),
+                                separatorLeadingInset: 56
+                            )
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
 
                 AssetSectionHeader(
-                    title: "Debt",
-                    amount: IDRFormatting.compact(data.totalDebt)
+                    title: "Liabilities",
+                    amount: IDRFormatting.compact(totalDebt)
                 )
+                .padding(.top, 8)
 
                 VStack(spacing: 0) {
-                    ForEach(data.debts) { debt in
-                        WorthlyDisclosureRow(
-                            icon: debt.name.lowercased().contains("kpr") ? "house" : "creditcard",
-                            title: debt.name,
-                            subtitle: "\(debt.durationMonths) months left",
-                            value: IDRFormatting.compact(debt.remainingAmount),
-                            separatorLeadingInset: 56
-                        )
+                    ForEach(sortedDebts) { debt in
+                        Button {
+                            activeEditor = .editDebt(debt.id)
+                        } label: {
+                            WorthlyDisclosureRow(
+                                icon: debt.name.lowercased().contains("kpr") ? "house" : "creditcard",
+                                title: debt.name,
+                                subtitle: "\(debt.durationMonths) months left",
+                                value: IDRFormatting.compact(debt.remainingAmount),
+                                separatorLeadingInset: 56
+                            )
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
             }
@@ -104,29 +151,137 @@ struct AssetView: View {
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                HStack(spacing: 12) {
-                    WorthlyToolbarIconButton(
-                        systemImage: "plus",
-                        accessibilityLabel: "Add asset",
-                        size: 32,
-                        showsCircleBackground: false
-                    ) {
-                        // Static first pass; add asset flow comes later.
-                    }
-
-                    WorthlyToolbarIconButton(
-                        systemImage: "wallet.pass",
-                        accessibilityLabel: "Open wallet",
-                        size: 32,
-                        showsCircleBackground: false
-                    ) {
-                        // Static first pass; account detail flow comes later.
-                    }
+                WorthlyToolbarIconButton(
+                    systemImage: "plus",
+                    accessibilityLabel: "Add asset"
+                ) {
+                    activeEditor = .add
                 }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(.ultraThinMaterial, in: Capsule())
             }
+        }
+        .sheet(item: $activeEditor) { editor in
+            switch editor {
+            case .add:
+                AddAssetEditorSheet(
+                    referenceDate: data.referenceDate,
+                    onSaveAccount: addAccount,
+                    onSaveInvestment: addInvestment
+                )
+                .presentationDetents([.height(560), .medium])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(28)
+                .presentationBackground(.regularMaterial)
+            case .editAccount(let accountID):
+                if let account = accounts.first(where: { $0.id == accountID }) {
+                    AssetAccountEditorSheet(account: account, onSave: updateAccount)
+                        .presentationDetents([.height(460), .medium])
+                        .presentationDragIndicator(.visible)
+                        .presentationCornerRadius(28)
+                        .presentationBackground(.regularMaterial)
+                } else {
+                    AssetMissingEditorSheet(title: "Account not found")
+                        .presentationDetents([.height(240)])
+                        .presentationDragIndicator(.visible)
+                        .presentationCornerRadius(28)
+                        .presentationBackground(.regularMaterial)
+                }
+            case .editInvestment(let investmentID):
+                if let investment = sbnInvestments.first(where: { $0.id == investmentID }) {
+                    AssetInvestmentEditorSheet(investment: investment, onSave: updateInvestment)
+                        .presentationDetents([.height(540), .medium])
+                        .presentationDragIndicator(.visible)
+                        .presentationCornerRadius(28)
+                        .presentationBackground(.regularMaterial)
+                } else {
+                    AssetMissingEditorSheet(title: "Investment not found")
+                        .presentationDetents([.height(240)])
+                        .presentationDragIndicator(.visible)
+                        .presentationCornerRadius(28)
+                        .presentationBackground(.regularMaterial)
+                }
+            case .editDebt(let debtID):
+                if let debt = debts.first(where: { $0.id == debtID }) {
+                    AssetDebtEditorSheet(debt: debt, onSave: updateDebt)
+                        .presentationDetents([.height(580), .medium])
+                        .presentationDragIndicator(.visible)
+                        .presentationCornerRadius(28)
+                        .presentationBackground(.regularMaterial)
+                } else {
+                    AssetMissingEditorSheet(title: "Liability not found")
+                        .presentationDetents([.height(240)])
+                        .presentationDragIndicator(.visible)
+                        .presentationCornerRadius(28)
+                        .presentationBackground(.regularMaterial)
+                }
+            }
+        }
+    }
+
+    private func addAccount(_ account: Account) {
+        accounts.append(account)
+    }
+
+    private func updateAccount(_ account: Account) {
+        guard let index = accounts.firstIndex(where: { $0.id == account.id }) else {
+            return
+        }
+
+        accounts[index] = account
+    }
+
+    private func addInvestment(_ investment: SBNInvestment) {
+        sbnInvestments.append(investment)
+    }
+
+    private func updateInvestment(_ investment: SBNInvestment) {
+        guard let index = sbnInvestments.firstIndex(where: { $0.id == investment.id }) else {
+            return
+        }
+
+        sbnInvestments[index] = investment
+    }
+
+    private func updateDebt(_ debt: Debt) {
+        guard let index = debts.firstIndex(where: { $0.id == debt.id }) else {
+            return
+        }
+
+        debts[index] = debt
+    }
+}
+
+private enum AssetEditor: Identifiable {
+    case add
+    case editAccount(UUID)
+    case editInvestment(UUID)
+    case editDebt(UUID)
+
+    var id: String {
+        switch self {
+        case .add:
+            "add"
+        case .editAccount(let accountID):
+            "edit-account-\(accountID.uuidString)"
+        case .editInvestment(let investmentID):
+            "edit-investment-\(investmentID.uuidString)"
+        case .editDebt(let debtID):
+            "edit-debt-\(debtID.uuidString)"
+        }
+    }
+}
+
+private enum AddAssetKind: String, CaseIterable, Identifiable {
+    case liquidAccount
+    case sbnInvestment
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .liquidAccount:
+            "Liquid"
+        case .sbnInvestment:
+            "SBN"
         }
     }
 }
@@ -151,15 +306,598 @@ private struct TotalAssetCard: View {
     }
 }
 
+private struct AddAssetEditorSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let onSaveAccount: (Account) -> Void
+    let onSaveInvestment: (SBNInvestment) -> Void
+
+    @State private var selectedKind = AddAssetKind.liquidAccount
+    @State private var accountDraft: AccountDraft
+    @State private var investmentDraft: InvestmentDraft
+
+    init(
+        referenceDate: Date,
+        onSaveAccount: @escaping (Account) -> Void,
+        onSaveInvestment: @escaping (SBNInvestment) -> Void
+    ) {
+        self.onSaveAccount = onSaveAccount
+        self.onSaveInvestment = onSaveInvestment
+        _accountDraft = State(initialValue: AccountDraft(referenceDate: referenceDate))
+        _investmentDraft = State(initialValue: InvestmentDraft(referenceDate: referenceDate))
+    }
+
+    private var canSave: Bool {
+        switch selectedKind {
+        case .liquidAccount:
+            accountDraft.isValid
+        case .sbnInvestment:
+            investmentDraft.isValid
+        }
+    }
+
+    var body: some View {
+        AssetEditorSheetContainer(
+            title: "Add Asset",
+            saveIsEnabled: canSave,
+            onCancel: { dismiss() },
+            onSave: save
+        ) {
+            VStack(spacing: 12) {
+                Picker("Asset type", selection: $selectedKind) {
+                    ForEach(AddAssetKind.allCases) { kind in
+                        Text(kind.title)
+                            .tag(kind)
+                    }
+                }
+                .pickerStyle(.segmented)
+
+                AssetEditorFormGroup {
+                    switch selectedKind {
+                    case .liquidAccount:
+                        AssetAccountForm(draft: $accountDraft)
+                    case .sbnInvestment:
+                        AssetInvestmentForm(draft: $investmentDraft)
+                    }
+                }
+            }
+        }
+    }
+
+    private func save() {
+        switch selectedKind {
+        case .liquidAccount:
+            guard let account = accountDraft.account else {
+                return
+            }
+
+            onSaveAccount(account)
+        case .sbnInvestment:
+            guard let investment = investmentDraft.investment else {
+                return
+            }
+
+            onSaveInvestment(investment)
+        }
+
+        dismiss()
+    }
+}
+
+private struct AssetAccountEditorSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let onSave: (Account) -> Void
+
+    @State private var draft: AccountDraft
+
+    init(account: Account, onSave: @escaping (Account) -> Void) {
+        self.onSave = onSave
+        _draft = State(initialValue: AccountDraft(account: account))
+    }
+
+    var body: some View {
+        AssetEditorSheetContainer(
+            title: "Edit Account",
+            saveIsEnabled: draft.isValid,
+            onCancel: { dismiss() },
+            onSave: save
+        ) {
+            AssetEditorFormGroup {
+                AssetAccountForm(draft: $draft)
+            }
+        }
+    }
+
+    private func save() {
+        guard let account = draft.account else {
+            return
+        }
+
+        onSave(account)
+        dismiss()
+    }
+}
+
+private struct AssetInvestmentEditorSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let title: String
+    let onSave: (SBNInvestment) -> Void
+
+    @State private var draft: InvestmentDraft
+
+    init(investment: SBNInvestment, onSave: @escaping (SBNInvestment) -> Void) {
+        self.title = "Edit \(investment.name)"
+        self.onSave = onSave
+        _draft = State(initialValue: InvestmentDraft(investment: investment))
+    }
+
+    var body: some View {
+        AssetEditorSheetContainer(
+            title: title,
+            saveIsEnabled: draft.isValid,
+            onCancel: { dismiss() },
+            onSave: save
+        ) {
+            AssetEditorFormGroup {
+                AssetInvestmentForm(draft: $draft)
+            }
+        }
+    }
+
+    private func save() {
+        guard let investment = draft.investment else {
+            return
+        }
+
+        onSave(investment)
+        dismiss()
+    }
+}
+
+private struct AssetDebtEditorSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let title: String
+    let onSave: (Debt) -> Void
+
+    @State private var draft: DebtDraft
+
+    init(debt: Debt, onSave: @escaping (Debt) -> Void) {
+        self.title = "Edit \(debt.name)"
+        self.onSave = onSave
+        _draft = State(initialValue: DebtDraft(debt: debt))
+    }
+
+    var body: some View {
+        AssetEditorSheetContainer(
+            title: title,
+            saveIsEnabled: draft.isValid,
+            onCancel: { dismiss() },
+            onSave: save
+        ) {
+            AssetEditorFormGroup {
+                AssetDebtForm(draft: $draft)
+            }
+        }
+    }
+
+    private func save() {
+        guard let debt = draft.debt else {
+            return
+        }
+
+        onSave(debt)
+        dismiss()
+    }
+}
+
+private struct AssetMissingEditorSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let title: String
+
+    var body: some View {
+        AssetEditorSheetContainer(
+            title: title,
+            saveIsEnabled: false,
+            onCancel: { dismiss() },
+            onSave: {}
+        ) {
+            Text("Please choose another asset.")
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+}
+
+private struct AssetAccountForm: View {
+    @Binding var draft: AccountDraft
+
+    var body: some View {
+        AssetEditorTextFieldRow(
+            icon: "textformat",
+            title: "Name",
+            placeholder: "Bank Central Asia",
+            text: $draft.name
+        )
+
+        AssetEditorMenuRow(
+            icon: draft.type.systemImage,
+            title: "Type",
+            value: draft.type.editorTitle
+        ) {
+            ForEach(AccountType.allCases) { type in
+                Button(type.editorTitle) {
+                    draft.type = type
+                }
+            }
+        }
+
+        AssetEditorTextFieldRow(
+            icon: "creditcard",
+            title: "Balance",
+            placeholder: "Rp 0",
+            text: $draft.balanceText,
+            keyboardType: .decimalPad
+        )
+
+        AssetEditorDateRow(
+            icon: "calendar",
+            title: "Since",
+            date: $draft.createdAt
+        )
+    }
+}
+
+private struct AssetInvestmentForm: View {
+    @Binding var draft: InvestmentDraft
+
+    var body: some View {
+        AssetEditorTextFieldRow(
+            icon: "textformat",
+            title: "Name",
+            placeholder: "ORI04ST26",
+            text: $draft.name
+        )
+
+        AssetEditorTextFieldRow(
+            icon: "banknote",
+            title: "Investment Value",
+            placeholder: "Rp 0",
+            text: $draft.principalText,
+            keyboardType: .decimalPad
+        )
+
+        AssetEditorTextFieldRow(
+            icon: "percent",
+            title: "Interest p.a. (%)",
+            placeholder: "0",
+            text: $draft.annualInterestRateText,
+            keyboardType: .decimalPad
+        )
+
+        AssetEditorTextFieldRow(
+            icon: "calendar.badge.clock",
+            title: "Duration (Months)",
+            placeholder: "0",
+            text: $draft.durationMonthsText,
+            keyboardType: .numberPad
+        )
+
+        AssetEditorDateRow(
+            icon: "calendar",
+            title: "Since",
+            date: $draft.startDate
+        )
+    }
+}
+
+private struct AssetDebtForm: View {
+    @Binding var draft: DebtDraft
+
+    var body: some View {
+        AssetEditorTextFieldRow(
+            icon: "textformat",
+            title: "Name",
+            placeholder: "KPR rumah",
+            text: $draft.name
+        )
+
+        AssetEditorTextFieldRow(
+            icon: "banknote",
+            title: "Debt Value",
+            placeholder: "Rp 0",
+            text: $draft.remainingAmountText,
+            keyboardType: .decimalPad
+        )
+
+        AssetEditorTextFieldRow(
+            icon: "percent",
+            title: "Interest p.a. (%)",
+            placeholder: "0",
+            text: $draft.annualInterestRateText,
+            keyboardType: .decimalPad
+        )
+
+        AssetEditorTextFieldRow(
+            icon: "calendar.badge.clock",
+            title: "Duration (Months)",
+            placeholder: "0",
+            text: $draft.durationMonthsText,
+            keyboardType: .numberPad
+        )
+
+        AssetEditorDateRow(
+            icon: "calendar",
+            title: "Since",
+            date: $draft.startDate
+        )
+    }
+}
+
+private struct AssetEditorSheetContainer<Content: View>: View {
+    let title: String
+    let saveIsEnabled: Bool
+    let onCancel: () -> Void
+    let onSave: () -> Void
+    let content: Content
+
+    init(
+        title: String,
+        saveIsEnabled: Bool,
+        onCancel: @escaping () -> Void,
+        onSave: @escaping () -> Void,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.title = title
+        self.saveIsEnabled = saveIsEnabled
+        self.onCancel = onCancel
+        self.onSave = onSave
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ZStack {
+                HStack {
+                    AssetSheetCircleButton(
+                        systemImage: "xmark",
+                        accessibilityLabel: "Cancel",
+                        style: .secondary,
+                        action: onCancel
+                    )
+
+                    Spacer()
+
+                    AssetSheetCircleButton(
+                        systemImage: "checkmark",
+                        accessibilityLabel: "Save asset",
+                        style: saveIsEnabled ? .primary : .disabled,
+                        action: onSave
+                    )
+                    .disabled(!saveIsEnabled)
+                }
+
+                Text(title)
+                    .font(.headline)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
+                    .padding(.horizontal, 62)
+            }
+            .padding(.top, 14)
+            .padding(.horizontal, 8)
+
+            ScrollView {
+                content
+                    .padding(.top, 18)
+                    .padding(.horizontal, 8)
+                    .padding(.bottom, 26)
+            }
+            .scrollIndicators(.hidden)
+        }
+        .padding(.horizontal, 14)
+    }
+}
+
+private struct AssetSheetCircleButton: View {
+    enum Style {
+        case primary
+        case secondary
+        case disabled
+    }
+
+    let systemImage: String
+    let accessibilityLabel: String
+    let style: Style
+    let action: () -> Void
+
+    private var background: Color {
+        switch style {
+        case .primary:
+            .blue
+        case .secondary, .disabled:
+            Color(.systemGray5)
+        }
+    }
+
+    private var foreground: Color {
+        switch style {
+        case .primary:
+            .white
+        case .secondary:
+            .primary
+        case .disabled:
+            .secondary.opacity(0.45)
+        }
+    }
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.system(size: 20, weight: .medium))
+                .foregroundStyle(foreground)
+                .frame(width: 44, height: 44)
+                .background(background, in: Circle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(accessibilityLabel)
+    }
+}
+
+private struct AssetEditorFormGroup<Content: View>: View {
+    let content: Content
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            content
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(
+            Color(.secondarySystemGroupedBackground),
+            in: RoundedRectangle(cornerRadius: 22, style: .continuous)
+        )
+    }
+}
+
+private struct AssetEditorTextFieldRow: View {
+    let icon: String
+    let title: String
+    let placeholder: String
+    @Binding var text: String
+    var keyboardType: UIKeyboardType = .default
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Image(systemName: icon)
+                .font(.system(size: 20, weight: .regular))
+                .foregroundStyle(.primary)
+                .frame(width: 30)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                TextField(placeholder, text: $text)
+                    .font(.body.weight(.semibold))
+                    .monospacedDigit()
+                    .keyboardType(keyboardType)
+                    .textInputAutocapitalization(.words)
+                    .autocorrectionDisabled()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.78)
+            }
+        }
+        .frame(minHeight: 58)
+        .overlay(alignment: .bottom) {
+            AssetEditorSeparator()
+                .padding(.leading, 44)
+        }
+    }
+}
+
+private struct AssetEditorMenuRow<MenuContent: View>: View {
+    let icon: String
+    let title: String
+    let value: String
+    let menuContent: MenuContent
+
+    init(
+        icon: String,
+        title: String,
+        value: String,
+        @ViewBuilder menuContent: () -> MenuContent
+    ) {
+        self.icon = icon
+        self.title = title
+        self.value = value
+        self.menuContent = menuContent()
+    }
+
+    var body: some View {
+        Menu {
+            menuContent
+        } label: {
+            HStack(spacing: 14) {
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .regular))
+                    .foregroundStyle(.primary)
+                    .frame(width: 30)
+
+                Text(title)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+
+                Spacer(minLength: 12)
+
+                Text(value)
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .frame(minHeight: 52)
+            .overlay(alignment: .bottom) {
+                AssetEditorSeparator()
+                    .padding(.leading, 44)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct AssetEditorDateRow: View {
+    let icon: String
+    let title: String
+    @Binding var date: Date
+
+    var body: some View {
+        DatePicker(
+            selection: $date,
+            displayedComponents: .date
+        ) {
+            HStack(spacing: 14) {
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .regular))
+                    .foregroundStyle(.primary)
+                    .frame(width: 30)
+
+                Text(title)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+            }
+        }
+        .frame(minHeight: 52)
+        .overlay(alignment: .bottom) {
+            AssetEditorSeparator()
+                .padding(.leading, 44)
+        }
+    }
+}
+
+private struct AssetEditorSeparator: View {
+    var body: some View {
+        Rectangle()
+            .fill(Color(.separator))
+            .frame(height: 0.5)
+    }
+}
+
 private struct AssetCompositionChart: View {
-    let slices: [PieSlice]
+    let slices: [AssetAllocationSlice]
 
-    private let columns = [
-        GridItem(.flexible(), spacing: 10),
-        GridItem(.flexible(), spacing: 10)
-    ]
-
-    private var positiveSlices: [PieSlice] {
+    private var positiveSlices: [AssetAllocationSlice] {
         slices.filter { $0.amount > 0 }
     }
 
@@ -168,17 +906,31 @@ private struct AssetCompositionChart: View {
     }
 
     var body: some View {
-        VStack(spacing: 14) {
-            AssetPieChart(slices: positiveSlices)
-                .frame(width: 250, height: 250)
-                .frame(maxWidth: .infinity)
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Asset Allocation")
+                    .font(.headline)
 
-            LazyVGrid(columns: columns, alignment: .leading, spacing: 10) {
-                ForEach(positiveSlices) { slice in
-                    PieLegendItem(
-                        slice: slice,
-                        percentage: percentageText(for: slice)
-                    )
+                Text("Liquid accounts + SBN investments")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .center, spacing: 18) {
+                    AssetDonutChart(slices: positiveSlices)
+                        .frame(width: 164, height: 164)
+
+                    allocationLegend
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                VStack(spacing: 12) {
+                    AssetDonutChart(slices: positiveSlices)
+                        .frame(width: 216, height: 216)
+                        .frame(maxWidth: .infinity)
+
+                    allocationLegend
                 }
             }
         }
@@ -186,19 +938,30 @@ private struct AssetCompositionChart: View {
         .accessibilityLabel(accessibilitySummary)
     }
 
+    private var allocationLegend: some View {
+        VStack(spacing: 8) {
+            ForEach(positiveSlices) { slice in
+                AllocationLegendRow(
+                    slice: slice,
+                    percentage: percentageText(for: slice)
+                )
+            }
+        }
+    }
+
     private var accessibilitySummary: String {
         guard totalAmount > 0 else {
-            return "Asset composition chart, no assets"
+            return "Asset allocation chart, no assets"
         }
 
         let summary = positiveSlices
             .map { "\($0.title) \(percentageText(for: $0))" }
             .joined(separator: ", ")
 
-        return "Asset composition chart, \(summary)"
+        return "Asset allocation chart, \(summary)"
     }
 
-    private func percentageText(for slice: PieSlice) -> String {
+    private func percentageText(for slice: AssetAllocationSlice) -> String {
         guard totalAmount > 0 else {
             return "0%"
         }
@@ -219,98 +982,112 @@ private struct AssetCompositionChart: View {
     }
 }
 
-private struct AssetPieChart: View {
-    let slices: [PieSlice]
+private struct AssetDonutChart: View {
+    let slices: [AssetAllocationSlice]
+
+    private var totalValue: Double {
+        slices.reduce(0) { $0 + $1.value }
+    }
 
     var body: some View {
-        Canvas { context, size in
-            let total = slices.reduce(0) { $0 + $1.value }
-            let diameter = min(size.width, size.height)
-            let radius = min(size.width, size.height) / 2
-            let center = CGPoint(x: size.width / 2, y: size.height / 2)
-            var startAngle = -90.0
+        ZStack {
+            Canvas { context, size in
+                let lineWidth = min(size.width, size.height) * 0.22
+                let radius = min(size.width, size.height) / 2 - lineWidth / 2
+                let center = CGPoint(x: size.width / 2, y: size.height / 2)
+                var startAngle = -90.0
 
-            guard total > 0 else {
-                let rect = CGRect(
-                    x: center.x - radius,
-                    y: center.y - radius,
-                    width: diameter,
-                    height: diameter
-                )
-                let emptyPath = Path(ellipseIn: rect)
-
-                context.stroke(
-                    emptyPath,
-                    with: .color(Color(.separator)),
-                    lineWidth: 1
-                )
-
-                return
-            }
-
-            for slice in slices {
-                let endAngle = startAngle + 360 * (slice.value / total)
-                var path = Path()
-
-                path.move(to: center)
-                path.addArc(
+                var basePath = Path()
+                basePath.addArc(
                     center: center,
                     radius: radius,
-                    startAngle: Angle(degrees: startAngle),
-                    endAngle: Angle(degrees: endAngle),
+                    startAngle: .degrees(0),
+                    endAngle: .degrees(360),
                     clockwise: false
                 )
-                path.closeSubpath()
 
-                context.fill(path, with: .color(slice.color))
                 context.stroke(
-                    path,
-                    with: .color(Color(.systemBackground)),
-                    lineWidth: 2
+                    basePath,
+                    with: .color(Color(.quaternarySystemFill)),
+                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt)
                 )
-                startAngle = endAngle
+
+                guard totalValue > 0 else {
+                    return
+                }
+
+                for slice in slices {
+                    let endAngle = startAngle + 360 * (slice.value / totalValue)
+                    var path = Path()
+
+                    path.addArc(
+                        center: center,
+                        radius: radius,
+                        startAngle: .degrees(startAngle),
+                        endAngle: .degrees(endAngle),
+                        clockwise: false
+                    )
+
+                    context.stroke(
+                        path,
+                        with: .color(slice.color),
+                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt)
+                    )
+
+                    startAngle = endAngle
+                }
+            }
+
+            VStack(spacing: 2) {
+                Text("Assets")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Text(totalValue > 0 ? "100%" : "0%")
+                    .font(.title3.weight(.bold))
+                    .monospacedDigit()
             }
         }
-        .clipShape(Circle())
-        .accessibilityLabel("Asset composition chart")
+        .accessibilityLabel("Asset allocation donut chart")
     }
 }
 
-private struct PieLegendItem: View {
-    let slice: PieSlice
+private struct AllocationLegendRow: View {
+    let slice: AssetAllocationSlice
     let percentage: String
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 10) {
             Circle()
                 .fill(slice.color)
                 .frame(width: 10, height: 10)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(slice.title)
-                    .font(.caption.weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                     .lineLimit(1)
 
-                HStack(spacing: 4) {
-                    Text(IDRFormatting.compact(slice.amount))
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .monospacedDigit()
-                        .lineLimit(1)
-
-                    Text("(\(percentage))")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
+                Text(percentage)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+                    .lineLimit(1)
             }
+
+            Spacer(minLength: 12)
+
+            WorthlyAmountText(
+                text: IDRFormatting.compact(slice.amount),
+                font: .subheadline,
+                color: .secondary
+            )
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
     }
 }
 
-private struct PieSlice: Identifiable {
+private struct AssetAllocationSlice: Identifiable {
     let id: String
     let title: String
     let amount: Decimal
@@ -322,71 +1099,17 @@ private struct PieSlice: Identifiable {
 }
 
 private enum AssetChartPalette {
-    // Each light color is chosen to clear the WCAG/HIG contrast equation
-    // (L1 + 0.05) / (L2 + 0.05) >= 3:1 against white system backgrounds.
-    // Each dark color is paired to clear the same target against black system backgrounds.
-    private static let colors: [Color] = [
-        adaptiveColor(
-            light: ChartRGB(red: 0, green: 87, blue: 217),
-            dark: ChartRGB(red: 121, green: 167, blue: 255)
-        ),
-        adaptiveColor(
-            light: ChartRGB(red: 138, green: 90, blue: 0),
-            dark: ChartRGB(red: 255, green: 209, blue: 102)
-        ),
-        adaptiveColor(
-            light: ChartRGB(red: 160, green: 24, blue: 108),
-            dark: ChartRGB(red: 255, green: 138, blue: 201)
-        ),
-        adaptiveColor(
-            light: ChartRGB(red: 0, green: 122, blue: 120),
-            dark: ChartRGB(red: 72, green: 214, blue: 210)
-        ),
-        adaptiveColor(
-            light: ChartRGB(red: 109, green: 59, blue: 170),
-            dark: ChartRGB(red: 198, green: 165, blue: 255)
-        ),
-        adaptiveColor(
-            light: ChartRGB(red: 154, green: 52, blue: 18),
-            dark: ChartRGB(red: 255, green: 176, blue: 136)
-        ),
-        adaptiveColor(
-            light: ChartRGB(red: 39, green: 92, blue: 0),
-            dark: ChartRGB(red: 155, green: 230, blue: 109)
-        ),
-        adaptiveColor(
-            light: ChartRGB(red: 122, green: 31, blue: 31),
-            dark: ChartRGB(red: 255, green: 154, blue: 154)
-        ),
-        adaptiveColor(
-            light: ChartRGB(red: 0, green: 78, blue: 100),
-            dark: ChartRGB(red: 141, green: 231, blue: 255)
-        ),
-        adaptiveColor(
-            light: ChartRGB(red: 107, green: 78, blue: 0),
-            dark: ChartRGB(red: 247, green: 215, blue: 116)
-        ),
-        adaptiveColor(
-            light: ChartRGB(red: 47, green: 93, blue: 140),
-            dark: ChartRGB(red: 167, green: 207, blue: 255)
-        ),
-        adaptiveColor(
-            light: ChartRGB(red: 140, green: 45, blue: 87),
-            dark: ChartRGB(red: 255, green: 159, blue: 194)
-        ),
-        adaptiveColor(
-            light: ChartRGB(red: 40, green: 97, blue: 90),
-            dark: ChartRGB(red: 141, green: 222, blue: 210)
-        ),
-        adaptiveColor(
-            light: ChartRGB(red: 92, green: 75, blue: 0),
-            dark: ChartRGB(red: 230, green: 213, blue: 138)
-        )
-    ]
+    // These pairs clear the HIG/WCAG contrast equation target of 3:1
+    // against system white in light mode and system black in dark mode.
+    static let liquidAccount = adaptiveColor(
+        light: ChartRGB(red: 0, green: 87, blue: 217),
+        dark: ChartRGB(red: 121, green: 167, blue: 255)
+    )
 
-    static func color(at index: Int) -> Color {
-        colors[index % colors.count]
-    }
+    static let sbnInvestment = adaptiveColor(
+        light: ChartRGB(red: 0, green: 122, blue: 120),
+        dark: ChartRGB(red: 72, green: 214, blue: 210)
+    )
 
     private static func adaptiveColor(light: ChartRGB, dark: ChartRGB) -> Color {
         Color(
@@ -432,21 +1155,237 @@ private struct AssetSectionHeader: View {
     }
 }
 
-private extension Account {
-    var chartTitle: String {
-        switch name {
-        case "Bank Central Asia":
-            "BCA"
-        case "Bank Mandiri":
-            "Mandiri"
-        case "Bank Jago":
-            "Jago"
-        case "BNI Emergency":
-            "BNI"
-        case "Cash on hand":
+private struct AccountDraft {
+    let id: UUID
+    var name: String
+    var type: AccountType
+    var balanceText: String
+    var createdAt: Date
+
+    init(referenceDate: Date) {
+        id = UUID()
+        name = ""
+        type = .bank
+        balanceText = ""
+        createdAt = referenceDate
+    }
+
+    init(account: Account) {
+        id = account.id
+        name = account.name
+        type = account.type
+        balanceText = IDRFormatting.full(account.balance)
+        createdAt = account.createdAt
+    }
+
+    private var trimmedName: String {
+        name.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var balance: Decimal? {
+        AssetInputFormatting.decimal(from: balanceText)
+    }
+
+    var isValid: Bool {
+        guard let balance else {
+            return false
+        }
+
+        return !trimmedName.isEmpty && balance > 0
+    }
+
+    var account: Account? {
+        guard let balance, isValid else {
+            return nil
+        }
+
+        return Account(
+            id: id,
+            name: trimmedName,
+            type: type,
+            balance: balance,
+            createdAt: createdAt
+        )
+    }
+}
+
+private struct InvestmentDraft {
+    let id: UUID
+    var name: String
+    var principalText: String
+    var annualInterestRateText: String
+    var durationMonthsText: String
+    var startDate: Date
+
+    init(referenceDate: Date) {
+        id = UUID()
+        name = ""
+        principalText = ""
+        annualInterestRateText = ""
+        durationMonthsText = "24"
+        startDate = referenceDate
+    }
+
+    init(investment: SBNInvestment) {
+        id = investment.id
+        name = investment.name
+        principalText = IDRFormatting.full(investment.principal)
+        annualInterestRateText = AssetInputFormatting.decimalText(investment.annualInterestRate)
+        durationMonthsText = "\(investment.durationMonths)"
+        startDate = investment.startDate
+    }
+
+    private var trimmedName: String {
+        name.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var principal: Decimal? {
+        AssetInputFormatting.decimal(from: principalText)
+    }
+
+    private var annualInterestRate: Decimal? {
+        AssetInputFormatting.decimal(from: annualInterestRateText)
+    }
+
+    private var durationMonths: Int? {
+        AssetInputFormatting.integer(from: durationMonthsText)
+    }
+
+    var isValid: Bool {
+        guard let principal, let annualInterestRate, let durationMonths else {
+            return false
+        }
+
+        return !trimmedName.isEmpty
+            && principal > 0
+            && annualInterestRate >= 0
+            && durationMonths > 0
+    }
+
+    var investment: SBNInvestment? {
+        guard let principal, let annualInterestRate, let durationMonths, isValid else {
+            return nil
+        }
+
+        return SBNInvestment(
+            id: id,
+            name: trimmedName,
+            principal: principal,
+            annualInterestRate: annualInterestRate,
+            durationMonths: durationMonths,
+            startDate: startDate
+        )
+    }
+}
+
+private struct DebtDraft {
+    let id: UUID
+    var name: String
+    var remainingAmountText: String
+    var annualInterestRateText: String
+    var durationMonthsText: String
+    var startDate: Date
+
+    init(debt: Debt) {
+        id = debt.id
+        name = debt.name
+        remainingAmountText = IDRFormatting.full(debt.remainingAmount)
+        annualInterestRateText = AssetInputFormatting.decimalText(debt.annualInterestRate)
+        durationMonthsText = "\(debt.durationMonths)"
+        startDate = debt.startDate
+    }
+
+    private var trimmedName: String {
+        name.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var remainingAmount: Decimal? {
+        AssetInputFormatting.decimal(from: remainingAmountText)
+    }
+
+    private var annualInterestRate: Decimal? {
+        AssetInputFormatting.decimal(from: annualInterestRateText)
+    }
+
+    private var durationMonths: Int? {
+        AssetInputFormatting.integer(from: durationMonthsText)
+    }
+
+    var isValid: Bool {
+        guard let remainingAmount, let annualInterestRate, let durationMonths else {
+            return false
+        }
+
+        return !trimmedName.isEmpty
+            && remainingAmount > 0
+            && annualInterestRate >= 0
+            && durationMonths > 0
+    }
+
+    var debt: Debt? {
+        guard let remainingAmount, let annualInterestRate, let durationMonths, isValid else {
+            return nil
+        }
+
+        return Debt(
+            id: id,
+            name: trimmedName,
+            remainingAmount: remainingAmount,
+            annualInterestRate: annualInterestRate,
+            durationMonths: durationMonths,
+            startDate: startDate
+        )
+    }
+}
+
+private enum AssetInputFormatting {
+    static func decimalText(_ amount: Decimal) -> String {
+        NSDecimalNumber(decimal: amount).stringValue
+    }
+
+    static func decimal(from text: String) -> Decimal? {
+        let allowedCharacters = CharacterSet(charactersIn: "0123456789.,")
+        let filteredScalars = text.unicodeScalars.filter { allowedCharacters.contains($0) }
+        var normalized = String(String.UnicodeScalarView(filteredScalars))
+
+        guard !normalized.isEmpty else {
+            return nil
+        }
+
+        if normalized.contains(",") {
+            normalized = normalized
+                .replacingOccurrences(of: ".", with: "")
+                .replacingOccurrences(of: ",", with: ".")
+        } else if normalized.filter({ $0 == "." }).count > 1 {
+            normalized = normalized.replacingOccurrences(of: ".", with: "")
+        }
+
+        return Decimal(
+            string: normalized,
+            locale: Locale(identifier: "en_US_POSIX")
+        )
+    }
+
+    static func integer(from text: String) -> Int? {
+        let digits = text.filter { $0.isNumber }
+
+        guard !digits.isEmpty else {
+            return nil
+        }
+
+        return Int(digits)
+    }
+}
+
+private extension AccountType {
+    var editorTitle: String {
+        switch self {
+        case .bank:
+            "Bank"
+        case .eWallet:
+            "e-wallet"
+        case .cash:
             "Cash"
-        default:
-            name
         }
     }
 }

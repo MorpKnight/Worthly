@@ -18,6 +18,7 @@ struct WorthlyDisclosureRow: View {
     let horizontalPadding: CGFloat
     let separatorLeadingInset: CGFloat
     let valueUsesMonospacedDigits: Bool
+    let showsChevron: Bool
 
     init(
         icon: String? = nil,
@@ -29,7 +30,8 @@ struct WorthlyDisclosureRow: View {
         rowMinHeight: CGFloat = 60,
         horizontalPadding: CGFloat = 0,
         separatorLeadingInset: CGFloat = 0,
-        valueUsesMonospacedDigits: Bool = true
+        valueUsesMonospacedDigits: Bool = true,
+        showsChevron: Bool = true
     ) {
         self.icon = icon
         self.title = title
@@ -41,6 +43,7 @@ struct WorthlyDisclosureRow: View {
         self.horizontalPadding = horizontalPadding
         self.separatorLeadingInset = separatorLeadingInset
         self.valueUsesMonospacedDigits = valueUsesMonospacedDigits
+        self.showsChevron = showsChevron
     }
 
     var body: some View {
@@ -79,9 +82,11 @@ struct WorthlyDisclosureRow: View {
                 }
             }
 
-            Image(systemName: "chevron.right")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.tertiary)
+            if showsChevron {
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
         }
         .padding(.horizontal, horizontalPadding)
         .frame(minHeight: rowMinHeight)
