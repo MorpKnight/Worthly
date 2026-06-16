@@ -55,6 +55,12 @@ enum IDRFormatting {
         return "\(formatted)%"
     }
 
+    static func signedPercent(_ amount: Decimal) -> String {
+        let sign = amount < 0 ? "-" : "+"
+
+        return "\(sign)\(percent(abs(amount)))"
+    }
+
     private static func abs(_ amount: Decimal) -> Decimal {
         amount < 0 ? -amount : amount
     }

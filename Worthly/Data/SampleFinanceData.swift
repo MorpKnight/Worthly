@@ -127,13 +127,13 @@ struct SampleFinanceData {
             transaction(.income, 675_000, "SBN coupon", bcaID, 15, 8, 30, "Monthly SBN coupon"),
             transaction(.outcome, 300_000, "Restaurant", bcaID, 15, 12, 40, "Lunch with team"),
             transaction(.outcome, 1_300_000, "Debt installment", mandiriID, 15, 10, 12, "Digimap installment"),
-            transaction(.account, 1_000_000, "Gopay top up", gopayID, 15, 7, 48, "Top up from BCA"),
+            transaction(.account, 1_000_000, "Gopay top up", bcaID, 15, 7, 48, "Top up from BCA", destinationAccountID: gopayID),
             transaction(.outcome, 45_000, "Coffee", gopayID, 15, 7, 28, "Morning coffee"),
             transaction(.outcome, 3_500_000, "Travel", mandiriID, 14, 20, 30, "Flight ticket"),
             transaction(.outcome, 150_000, "Phone", bcaID, 14, 18, 15, "Monthly phone package"),
             transaction(.income, 2_000_000, "Freelance", jagoID, 14, 16, 45, "Landing page copy"),
             transaction(.outcome, 820_000, "Groceries", bcaID, 14, 11, 10, "Weekly groceries"),
-            transaction(.account, 4_000_000, "Transfer", bcaID, 14, 9, 15, "Move emergency cash"),
+            transaction(.account, 4_000_000, "Transfer", bcaID, 14, 9, 15, "Move emergency cash", destinationAccountID: bniID),
             transaction(.outcome, 75_000, "Laundry", cashID, 14, 8, 10, "Laundry"),
             transaction(.outcome, 410_000, "Transport", gopayID, 13, 21, 8, "Ride share"),
             transaction(.outcome, 265_000, "Restaurant", shopeePayID, 13, 19, 20, "Dinner"),
@@ -143,7 +143,7 @@ struct SampleFinanceData {
             transaction(.outcome, 640_000, "Groceries", bcaID, 12, 20, 5, "House supplies"),
             transaction(.outcome, 95_000, "Transport", gopayID, 12, 17, 30, "Train and ride"),
             transaction(.outcome, 2_100_000, "Education", bcaID, 12, 10, 5, "Course installment"),
-            transaction(.account, 2_500_000, "Transfer", seabankID, 12, 8, 25, "Savings sweep"),
+            transaction(.account, 2_500_000, "Transfer", bcaID, 12, 8, 25, "Savings sweep", destinationAccountID: seabankID),
             transaction(.outcome, 55_000, "Coffee", cashID, 11, 17, 0, "Coffee"),
             transaction(.outcome, 275_000, "Health", bcaID, 11, 15, 45, "Medicine"),
             transaction(.outcome, 1_900_000, "Rent", mandiriID, 11, 9, 5, "Studio rent"),
@@ -152,7 +152,7 @@ struct SampleFinanceData {
             transaction(.outcome, 230_000, "Internet", bcaID, 10, 13, 10, "Home internet"),
             transaction(.income, 1_000_000, "Side project", jagoID, 10, 11, 30, "Prototype milestone"),
             transaction(.outcome, 480_000, "Groceries", bcaID, 9, 19, 45, "Market"),
-            transaction(.account, 750_000, "Top up", gopayID, 9, 18, 20, "Wallet refill"),
+            transaction(.account, 750_000, "Top up", bcaID, 9, 18, 20, "Wallet refill", destinationAccountID: gopayID),
             transaction(.outcome, 67_000, "Transport", gopayID, 9, 8, 15, "Commute"),
             transaction(.outcome, 1_100_000, "Debt installment", bcaID, 8, 10, 0, "Credit card payment"),
             transaction(.outcome, 340_000, "Shopping", shopeePayID, 8, 13, 50, "Desk accessories"),
@@ -163,7 +163,7 @@ struct SampleFinanceData {
             transaction(.outcome, 1_450_000, "Travel", mandiriID, 6, 9, 45, "Hotel deposit"),
             transaction(.outcome, 90_000, "Transport", gopayID, 5, 19, 0, "Ride share"),
             transaction(.outcome, 310_000, "Health", bcaID, 5, 13, 10, "Clinic"),
-            transaction(.account, 3_000_000, "Transfer", bniID, 4, 8, 30, "Emergency fund"),
+            transaction(.account, 3_000_000, "Transfer", bcaID, 4, 8, 30, "Emergency fund", destinationAccountID: bniID),
             transaction(.outcome, 88_000, "Coffee", gopayID, 4, 7, 55, "Cafe"),
             transaction(.outcome, 560_000, "Groceries", bcaID, 3, 20, 12, "Monthly stock"),
             transaction(.outcome, 125_000, "Phone", bcaID, 3, 11, 8, "Data package"),
@@ -257,7 +257,8 @@ struct SampleFinanceData {
         _ day: Int,
         _ hour: Int,
         _ minute: Int,
-        _ note: String
+        _ note: String,
+        destinationAccountID: UUID? = nil
     ) -> FinanceTransaction {
         FinanceTransaction(
             id: UUID(),
@@ -265,6 +266,7 @@ struct SampleFinanceData {
             amount: amount,
             category: category,
             accountID: accountID,
+            destinationAccountID: destinationAccountID,
             date: date(year: 2026, month: 6, day: day, hour: hour, minute: minute),
             note: note
         )

@@ -8,38 +8,25 @@
 import SwiftUI
 
 struct HistoryView: View {
-    let data: SampleFinanceData
+    let store: FinanceStore
 
     @State private var selectedFilter = HistoryFilter.all
-    @State private var transactions: [FinanceTransaction]
     @State private var activeEditor: HistoryTransactionEditor?
 
-    init(data: SampleFinanceData = .current) {
-        self.data = data
-        _transactions = State(initialValue: data.transactions)
+    init(store: FinanceStore = FinanceStore()) {
+        self.store = store
     }
 
     private var filteredTransactions: [FinanceTransaction] {
-        let filteredTransactions: [FinanceTransaction]
-
-        if let transactionType = selectedFilter.transactionType {
-            filteredTransactions = transactions.filter { $0.type == transactionType }
-        } else {
-            filteredTransactions = transactions
-        }
-
-        return filteredTransactions.sorted { $0.date > $1.date }
+        store.transactions(for: selectedFilter.transactionType)
     }
 
     private var transactionGroups: [FinanceTransactionGroup] {
-        data.groupedTransactions(for: filteredTransactions)
+        store.groupedTransactions(for: filteredTransactions)
     }
 
     private var referenceMonthSummary: (total: Decimal, count: Int) {
-        let monthTransactions = transactions.filter { isInReferenceMonth($0.date) }
-        let total = monthTransactions.reduce(0) { $0 + $1.cashflowAmount }
-
-        return (total, monthTransactions.count)
+        store.referenceMonthSummary
     }
 
     var body: some View {
@@ -70,7 +57,8 @@ struct HistoryView: View {
                                     icon: transaction.displayIcon,
                                     title: transaction.category,
                                     subtitle: transaction.subtitle(
-                                        accountName: data.accountName(for: transaction.accountID)
+                                        accountName: store.accountName(for: transaction.accountID),
+                                        destinationAccountName: store.destinationAccountName(for: transaction)
                                     ),
                                     amount: transaction.displayAmount,
                                     iconTint: transaction.displayTint
@@ -104,22 +92,22 @@ struct HistoryView: View {
                 HistoryTransactionEditorSheet(
                     mode: .add,
                     transaction: nil,
-                    accounts: data.accounts,
-                    referenceDate: data.referenceDate,
-                    onSave: addTransaction
+                    accounts: store.accounts,
+                    referenceDate: store.referenceDate,
+                    onSave: { store.addTransaction($0) }
                 )
                 .presentationDetents([.height(520), .medium])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(28)
                 .presentationBackground(.regularMaterial)
             case .edit(let transactionID):
-                if let transaction = transactions.first(where: { $0.id == transactionID }) {
+                if let transaction = store.transactions.first(where: { $0.id == transactionID }) {
                     HistoryTransactionEditorSheet(
                         mode: .edit,
                         transaction: transaction,
-                        accounts: data.accounts,
-                        referenceDate: data.referenceDate,
-                        onSave: updateTransaction
+                        accounts: store.accounts,
+                        referenceDate: store.referenceDate,
+                        onSave: { store.updateTransaction($0) }
                     )
                     .presentationDetents([.height(520), .medium])
                     .presentationDragIndicator(.visible)
@@ -134,27 +122,6 @@ struct HistoryView: View {
                 }
             }
         }
-    }
-
-    private func addTransaction(_ transaction: FinanceTransaction) {
-        transactions.append(transaction)
-    }
-
-    private func updateTransaction(_ transaction: FinanceTransaction) {
-        guard let index = transactions.firstIndex(where: { $0.id == transaction.id }) else {
-            return
-        }
-
-        transactions[index] = transaction
-    }
-
-    private func isInReferenceMonth(_ date: Date) -> Bool {
-        let calendar = Calendar(identifier: .gregorian)
-        let referenceComponents = calendar.dateComponents([.year, .month], from: data.referenceDate)
-        let dateComponents = calendar.dateComponents([.year, .month], from: date)
-
-        return referenceComponents.year == dateComponents.year
-            && referenceComponents.month == dateComponents.month
     }
 }
 
@@ -362,6 +329,7 @@ private struct HistoryTransactionEditorSheet: View {
     @State private var editorType: HistoryEditorTransactionType
     @State private var category: String
     @State private var accountID: UUID?
+    @State private var destinationAccountID: UUID?
     @State private var date: Date
     @State private var note: String
 
@@ -373,6 +341,15 @@ private struct HistoryTransactionEditorSheet: View {
         onSave: @escaping (FinanceTransaction) -> Void
     ) {
         let initialType = HistoryEditorTransactionType(transactionType: transaction?.type ?? .income)
+        let initialAccountID = transaction?.accountID ?? accounts.first?.id
+        let initialDestinationAccountID = transaction?.destinationAccountID
+            ?? accounts.first { account in
+                guard let initialAccountID else {
+                    return true
+                }
+
+                return account.id != initialAccountID
+            }?.id
 
         self.mode = mode
         self.transaction = transaction
@@ -382,7 +359,8 @@ private struct HistoryTransactionEditorSheet: View {
         _amountText = State(initialValue: HistoryInputFormatting.currency(transaction?.amount ?? 0))
         _editorType = State(initialValue: initialType)
         _category = State(initialValue: transaction?.category ?? initialType.defaultCategory)
-        _accountID = State(initialValue: transaction?.accountID ?? accounts.first?.id)
+        _accountID = State(initialValue: initialAccountID)
+        _destinationAccountID = State(initialValue: initialDestinationAccountID)
         _date = State(initialValue: transaction?.date ?? referenceDate)
         _note = State(initialValue: transaction?.note ?? "")
     }
@@ -399,9 +377,25 @@ private struct HistoryTransactionEditorSheet: View {
         return accounts.first { $0.id == accountID }
     }
 
+    private var selectedDestinationAccount: Account? {
+        guard let destinationAccountID else {
+            return nil
+        }
+
+        return accounts.first { $0.id == destinationAccountID }
+    }
+
     private var canSave: Bool {
         guard let amount, amount > 0, selectedAccount != nil else {
             return false
+        }
+
+        if editorType == .account {
+            guard let destinationAccountID else {
+                return false
+            }
+
+            return !category.isEmpty && destinationAccountID != accountID
         }
 
         return !category.isEmpty
@@ -410,6 +404,13 @@ private struct HistoryTransactionEditorSheet: View {
     private var amountHelperText: String {
         guard let amount, amount > 0 else {
             return "Enter the transaction amount first"
+        }
+
+        if editorType == .account {
+            let source = selectedAccount?.shortDisplayName ?? "account"
+            let destination = selectedDestinationAccount?.shortDisplayName ?? "destination"
+
+            return "Transfer from \(source) to \(destination)"
         }
 
         return "\(editorType.title) through \(selectedAccount?.shortDisplayName ?? "account")"
@@ -455,6 +456,10 @@ private struct HistoryTransactionEditorSheet: View {
                     if !newType.categories.contains(category) {
                         category = newType.defaultCategory
                     }
+
+                    if newType == .account {
+                        repairDestinationAccount()
+                    }
                 }
 
                 VStack(spacing: 0) {
@@ -472,12 +477,33 @@ private struct HistoryTransactionEditorSheet: View {
 
                     HistoryEditorMenuRow(
                         icon: "wallet.pass",
-                        title: "Account",
+                        title: editorType == .account ? "From" : "Account",
                         value: selectedAccount?.shortDisplayName ?? "Account"
                     ) {
                         ForEach(accounts) { account in
                             Button(account.shortDisplayName) {
                                 accountID = account.id
+                                repairDestinationAccount()
+                            }
+                        }
+                    }
+
+                    if editorType == .account {
+                        HistoryEditorMenuRow(
+                            icon: "arrow.right",
+                            title: "To",
+                            value: selectedDestinationAccount?.shortDisplayName ?? "Account"
+                        ) {
+                            ForEach(accounts.filter { account in
+                                guard let accountID else {
+                                    return true
+                                }
+
+                                return account.id != accountID
+                            }) { account in
+                                Button(account.shortDisplayName) {
+                                    destinationAccountID = account.id
+                                }
                             }
                         }
                     }
@@ -507,12 +533,30 @@ private struct HistoryTransactionEditorSheet: View {
             amount: amount,
             category: category,
             accountID: accountID,
+            destinationAccountID: editorType == .account ? destinationAccountID : nil,
             date: date,
             note: note
         )
 
         onSave(transaction)
         dismiss()
+    }
+
+    private func repairDestinationAccount() {
+        guard editorType == .account else {
+            destinationAccountID = nil
+            return
+        }
+
+        if destinationAccountID == nil || destinationAccountID == accountID {
+            destinationAccountID = accounts.first { account in
+                guard let accountID else {
+                    return true
+                }
+
+                return account.id != accountID
+            }?.id
+        }
     }
 }
 

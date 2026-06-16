@@ -8,6 +8,14 @@
 import SwiftUI
 
 struct SettingView: View {
+    let store: FinanceStore
+
+    @State private var showsResetConfirmation = false
+
+    init(store: FinanceStore = FinanceStore()) {
+        self.store = store
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
@@ -50,17 +58,23 @@ struct SettingView: View {
                         rowMinHeight: 52,
                         horizontalPadding: 16,
                         separatorLeadingInset: 16,
-                        valueUsesMonospacedDigits: false
+                        valueUsesMonospacedDigits: false,
+                        showsChevron: false
                     )
 
-                    WorthlyDisclosureRow(
-                        title: "Reset demo data",
-                        titleColor: .red,
-                        rowMinHeight: 52,
-                        horizontalPadding: 16,
-                        separatorLeadingInset: 16,
-                        valueUsesMonospacedDigits: false
-                    )
+                    Button {
+                        showsResetConfirmation = true
+                    } label: {
+                        WorthlyDisclosureRow(
+                            title: "Reset demo data",
+                            titleColor: .red,
+                            rowMinHeight: 52,
+                            horizontalPadding: 16,
+                            separatorLeadingInset: 16,
+                            valueUsesMonospacedDigits: false
+                        )
+                    }
+                    .buttonStyle(.plain)
                 }
             }
             .padding(.top, 8)
@@ -69,6 +83,19 @@ struct SettingView: View {
         .background(Color(.systemBackground))
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.large)
+        .confirmationDialog(
+            "Reset demo data?",
+            isPresented: $showsResetConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Reset demo data", role: .destructive) {
+                store.resetToSampleData()
+            }
+
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This replaces your local Worthly data with the sample dataset.")
+        }
     }
 }
 

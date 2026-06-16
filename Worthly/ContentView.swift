@@ -8,8 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    private let sampleData = SampleFinanceData.current
-
+    @State private var store = FinanceStore()
     @State private var selectedTab: AppTab = .overview
 
     var body: some View {
@@ -31,15 +30,15 @@ struct ContentView: View {
     private func content(for tab: AppTab) -> some View {
         switch tab {
         case .overview:
-            HomeView(data: sampleData)
+            HomeView(store: store)
         case .planning:
-            PlanningView(data: sampleData)
+            PlanningView(store: store)
         case .assets:
-            AssetView(data: sampleData)
+            AssetView(store: store)
         case .history:
-            HistoryView(data: sampleData)
+            HistoryView(store: store)
         case .settings:
-            SettingView()
+            SettingView(store: store)
         }
     }
 }

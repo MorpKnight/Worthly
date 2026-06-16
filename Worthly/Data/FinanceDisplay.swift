@@ -64,10 +64,19 @@ extension FinanceTransaction {
     }
 
     var displayAmount: String {
-        IDRFormatting.signedCompact(displaySignedAmount)
+        switch type {
+        case .income, .outcome:
+            IDRFormatting.signedCompact(displaySignedAmount)
+        case .account:
+            IDRFormatting.compact(amount)
+        }
     }
 
-    func subtitle(accountName: String) -> String {
-        "\(type.title) - \(accountName)"
+    func subtitle(accountName: String, destinationAccountName: String? = nil) -> String {
+        if type == .account, let destinationAccountName {
+            return "\(type.title) - \(accountName) to \(destinationAccountName)"
+        }
+
+        return "\(type.title) - \(accountName)"
     }
 }

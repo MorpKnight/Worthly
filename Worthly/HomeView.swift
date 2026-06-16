@@ -8,30 +8,30 @@
 import SwiftUI
 
 struct HomeView: View {
-    let data: SampleFinanceData
+    let store: FinanceStore
 
-    init(data: SampleFinanceData = .current) {
-        self.data = data
+    init(store: FinanceStore = FinanceStore()) {
+        self.store = store
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 NetWorthCard(
-                    netWorth: data.currentNetWorth,
-                    changeText: data.netWorthChangeText
+                    netWorth: store.currentNetWorth,
+                    changeText: store.netWorthChangeText
                 )
 
                 HStack(spacing: 10) {
                     MetricCard(
                         title: "Cashflow",
-                        value: IDRFormatting.signedCompact(data.currentMonthCashflow),
-                        valueColor: data.currentMonthCashflow < 0 ? .red : .green
+                        value: IDRFormatting.signedCompact(store.currentMonthCashflow),
+                        valueColor: store.currentMonthCashflow < 0 ? .red : .green
                     )
 
                     MetricCard(
                         title: "View Planning",
-                        value: IDRFormatting.compact(data.projectedNetWorth),
+                        value: IDRFormatting.compact(store.projectedNetWorth),
                         valueColor: .primary
                     )
                 }
@@ -41,7 +41,7 @@ struct HomeView: View {
                         .font(.headline)
 
                     VStack(alignment: .leading, spacing: 10) {
-                        ForEach(data.checklistActions) { action in
+                        ForEach(store.checklistActions) { action in
                             ChecklistRow(title: action.title, isCompleted: action.isCompleted)
                         }
                     }
@@ -52,12 +52,13 @@ struct HomeView: View {
                         .font(.headline)
 
                     VStack(spacing: 0) {
-                        ForEach(data.recentTransactions.prefix(5)) { transaction in
+                        ForEach(store.recentTransactions.prefix(5)) { transaction in
                             WorthlyTransactionRow(
                                 icon: transaction.displayIcon,
                                 title: transaction.category,
                                 subtitle: transaction.subtitle(
-                                    accountName: data.accountName(for: transaction.accountID)
+                                    accountName: store.accountName(for: transaction.accountID),
+                                    destinationAccountName: store.destinationAccountName(for: transaction)
                                 ),
                                 amount: transaction.displayAmount,
                                 iconTint: transaction.displayTint

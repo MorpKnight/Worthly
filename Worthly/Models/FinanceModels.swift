@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum AccountType: String, CaseIterable, Identifiable {
+enum AccountType: String, CaseIterable, Identifiable, Codable {
     case bank
     case eWallet
     case cash
@@ -26,7 +26,7 @@ enum AccountType: String, CaseIterable, Identifiable {
     }
 }
 
-enum FinanceTransactionType: String, CaseIterable, Identifiable {
+enum FinanceTransactionType: String, CaseIterable, Identifiable, Codable {
     case income
     case outcome
     case account
@@ -45,7 +45,7 @@ enum FinanceTransactionType: String, CaseIterable, Identifiable {
     }
 }
 
-struct Account: Identifiable {
+struct Account: Identifiable, Codable {
     let id: UUID
     var name: String
     var type: AccountType
@@ -53,20 +53,21 @@ struct Account: Identifiable {
     var createdAt: Date
 }
 
-struct FinanceTransaction: Identifiable {
+struct FinanceTransaction: Identifiable, Codable {
     let id: UUID
     var type: FinanceTransactionType
     var amount: Decimal
     var category: String
     var accountID: UUID
+    var destinationAccountID: UUID?
     var date: Date
     var note: String
 
     var displaySignedAmount: Decimal {
         switch type {
-        case .income, .account:
+        case .income:
             amount
-        case .outcome:
+        case .outcome, .account:
             -amount
         }
     }
@@ -83,7 +84,7 @@ struct FinanceTransaction: Identifiable {
     }
 }
 
-struct SBNInvestment: Identifiable {
+struct SBNInvestment: Identifiable, Codable {
     let id: UUID
     var name: String
     var principal: Decimal
@@ -94,9 +95,13 @@ struct SBNInvestment: Identifiable {
     var estimatedMonthlyCoupon: Decimal {
         principal * (annualInterestRate / 100) / 12
     }
+
+    func maturityDate(using calendar: Calendar = .worthly) -> Date {
+        calendar.date(byAdding: .month, value: durationMonths, to: startDate) ?? startDate
+    }
 }
 
-struct Debt: Identifiable {
+struct Debt: Identifiable, Codable {
     let id: UUID
     var name: String
     var remainingAmount: Decimal
@@ -105,22 +110,36 @@ struct Debt: Identifiable {
     var startDate: Date
 
     var estimatedMonthlyInstallment: Decimal {
-        let monthCount = Decimal(max(durationMonths, 1))
-        let principalPayment = remainingAmount / monthCount
-        let monthlyInterest = remainingAmount * (annualInterestRate / 100) / 12
+        let monthCount = max(durationMonths, 1)
 
-        return principalPayment + monthlyInterest
+        guard annualInterestRate > 0 else {
+            return remainingAmount / Decimal(monthCount)
+        }
+
+        let principal = NSDecimalNumber(decimal: remainingAmount).doubleValue
+        let monthlyRate = NSDecimalNumber(decimal: annualInterestRate).doubleValue / 100 / 12
+        let denominator = 1 - pow(1 + monthlyRate, -Double(monthCount))
+
+        guard denominator > 0 else {
+            return remainingAmount / Decimal(monthCount)
+        }
+
+        return Decimal(principal * monthlyRate / denominator)
+    }
+
+    func maturityDate(using calendar: Calendar = .worthly) -> Date {
+        calendar.date(byAdding: .month, value: durationMonths, to: startDate) ?? startDate
     }
 }
 
-struct RecurringIncome: Identifiable {
+struct RecurringIncome: Identifiable, Codable {
     let id: UUID
     var name: String
     var amount: Decimal
     var payday: Int
 }
 
-struct ChecklistAction: Identifiable {
+struct ChecklistAction: Identifiable, Codable {
     let id: UUID
     var title: String
     var isCompleted: Bool
@@ -130,4 +149,13 @@ struct FinanceTransactionGroup: Identifiable {
     let id: String
     var title: String
     var transactions: [FinanceTransaction]
+}
+
+extension Calendar {
+    static var worthly: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Jakarta") ?? .current
+
+        return calendar
+    }
 }

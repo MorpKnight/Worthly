@@ -8,34 +8,28 @@
 import SwiftUI
 
 struct AssetView: View {
-    let data: SampleFinanceData
+    let store: FinanceStore
 
-    @State private var accounts: [Account]
-    @State private var sbnInvestments: [SBNInvestment]
-    @State private var debts: [Debt]
     @State private var activeEditor: AssetEditor?
 
-    init(data: SampleFinanceData = .current) {
-        self.data = data
-        _accounts = State(initialValue: data.accounts)
-        _sbnInvestments = State(initialValue: data.sbnInvestments)
-        _debts = State(initialValue: data.debts)
+    init(store: FinanceStore = FinanceStore()) {
+        self.store = store
     }
 
     private var liquidAssets: Decimal {
-        accounts.reduce(0) { $0 + $1.balance }
+        store.liquidAssets
     }
 
     private var investmentPrincipal: Decimal {
-        sbnInvestments.reduce(0) { $0 + $1.principal }
+        store.investmentPrincipal
     }
 
     private var totalAssets: Decimal {
-        liquidAssets + investmentPrincipal
+        store.totalAssets
     }
 
     private var totalDebt: Decimal {
-        debts.reduce(0) { $0 + $1.remainingAmount }
+        store.totalDebt
     }
 
     private var allocationSlices: [AssetAllocationSlice] {
@@ -56,15 +50,15 @@ struct AssetView: View {
     }
 
     private var sortedAccounts: [Account] {
-        accounts.sorted { $0.balance > $1.balance }
+        store.accounts.sorted { $0.balance > $1.balance }
     }
 
     private var sortedSbnInvestments: [SBNInvestment] {
-        sbnInvestments.sorted { $0.principal > $1.principal }
+        store.sbnInvestments.sorted { $0.principal > $1.principal }
     }
 
     private var sortedDebts: [Debt] {
-        debts.sorted { $0.remainingAmount > $1.remainingAmount }
+        store.debts.sorted { $0.remainingAmount > $1.remainingAmount }
     }
 
     var body: some View {
@@ -163,17 +157,17 @@ struct AssetView: View {
             switch editor {
             case .add:
                 AddAssetEditorSheet(
-                    referenceDate: data.referenceDate,
-                    onSaveAccount: addAccount,
-                    onSaveInvestment: addInvestment
+                    referenceDate: store.referenceDate,
+                    onSaveAccount: { store.addAccount($0) },
+                    onSaveInvestment: { store.addInvestment($0) }
                 )
                 .presentationDetents([.height(560), .medium])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(28)
                 .presentationBackground(.regularMaterial)
             case .editAccount(let accountID):
-                if let account = accounts.first(where: { $0.id == accountID }) {
-                    AssetAccountEditorSheet(account: account, onSave: updateAccount)
+                if let account = store.accounts.first(where: { $0.id == accountID }) {
+                    AssetAccountEditorSheet(account: account) { store.updateAccount($0) }
                         .presentationDetents([.height(460), .medium])
                         .presentationDragIndicator(.visible)
                         .presentationCornerRadius(28)
@@ -186,8 +180,8 @@ struct AssetView: View {
                         .presentationBackground(.regularMaterial)
                 }
             case .editInvestment(let investmentID):
-                if let investment = sbnInvestments.first(where: { $0.id == investmentID }) {
-                    AssetInvestmentEditorSheet(investment: investment, onSave: updateInvestment)
+                if let investment = store.sbnInvestments.first(where: { $0.id == investmentID }) {
+                    AssetInvestmentEditorSheet(investment: investment) { store.updateInvestment($0) }
                         .presentationDetents([.height(540), .medium])
                         .presentationDragIndicator(.visible)
                         .presentationCornerRadius(28)
@@ -200,8 +194,8 @@ struct AssetView: View {
                         .presentationBackground(.regularMaterial)
                 }
             case .editDebt(let debtID):
-                if let debt = debts.first(where: { $0.id == debtID }) {
-                    AssetDebtEditorSheet(debt: debt, onSave: updateDebt)
+                if let debt = store.debts.first(where: { $0.id == debtID }) {
+                    AssetDebtEditorSheet(debt: debt) { store.updateDebt($0) }
                         .presentationDetents([.height(580), .medium])
                         .presentationDragIndicator(.visible)
                         .presentationCornerRadius(28)
@@ -215,38 +209,6 @@ struct AssetView: View {
                 }
             }
         }
-    }
-
-    private func addAccount(_ account: Account) {
-        accounts.append(account)
-    }
-
-    private func updateAccount(_ account: Account) {
-        guard let index = accounts.firstIndex(where: { $0.id == account.id }) else {
-            return
-        }
-
-        accounts[index] = account
-    }
-
-    private func addInvestment(_ investment: SBNInvestment) {
-        sbnInvestments.append(investment)
-    }
-
-    private func updateInvestment(_ investment: SBNInvestment) {
-        guard let index = sbnInvestments.firstIndex(where: { $0.id == investment.id }) else {
-            return
-        }
-
-        sbnInvestments[index] = investment
-    }
-
-    private func updateDebt(_ debt: Debt) {
-        guard let index = debts.firstIndex(where: { $0.id == debt.id }) else {
-            return
-        }
-
-        debts[index] = debt
     }
 }
 
@@ -308,6 +270,7 @@ private struct TotalAssetCard: View {
 
 private struct AddAssetEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let onSaveAccount: (Account) -> Void
     let onSaveInvestment: (SBNInvestment) -> Void
@@ -336,6 +299,29 @@ private struct AddAssetEditorSheet: View {
         }
     }
 
+    private var selectedKindBinding: Binding<AddAssetKind> {
+        Binding(
+            get: { selectedKind },
+            set: { newValue in
+                guard selectedKind != newValue else {
+                    return
+                }
+
+                if reduceMotion {
+                    selectedKind = newValue
+                } else {
+                    withAnimation(.snappy(duration: 0.18)) {
+                        selectedKind = newValue
+                    }
+                }
+            }
+        )
+    }
+
+    private var formTransition: AnyTransition {
+        reduceMotion ? .identity : .opacity
+    }
+
     var body: some View {
         AssetEditorSheetContainer(
             title: "Add Asset",
@@ -344,7 +330,7 @@ private struct AddAssetEditorSheet: View {
             onSave: save
         ) {
             VStack(spacing: 12) {
-                Picker("Asset type", selection: $selectedKind) {
+                Picker("Asset type", selection: selectedKindBinding) {
                     ForEach(AddAssetKind.allCases) { kind in
                         Text(kind.title)
                             .tag(kind)
@@ -353,12 +339,16 @@ private struct AddAssetEditorSheet: View {
                 .pickerStyle(.segmented)
 
                 AssetEditorFormGroup {
-                    switch selectedKind {
-                    case .liquidAccount:
-                        AssetAccountForm(draft: $accountDraft)
-                    case .sbnInvestment:
-                        AssetInvestmentForm(draft: $investmentDraft)
+                    Group {
+                        switch selectedKind {
+                        case .liquidAccount:
+                            AssetAccountForm(draft: $accountDraft)
+                        case .sbnInvestment:
+                            AssetInvestmentForm(draft: $investmentDraft)
+                        }
                     }
+                    .id(selectedKind)
+                    .transition(formTransition)
                 }
             }
         }

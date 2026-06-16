@@ -8,74 +8,63 @@
 import SwiftUI
 
 struct PlanningView: View {
-    let data: SampleFinanceData
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    @State private var projectionHorizon: Date
-    @State private var recurringIncomes: [RecurringIncome]
-    @State private var sbnInvestments: [SBNInvestment]
-    @State private var debts: [Debt]
+    let store: FinanceStore
+
     @State private var activeEditor: PlanningEditor?
     @State private var showsProjectionCalendar = false
 
-    init(data: SampleFinanceData = .current) {
-        self.data = data
-        _projectionHorizon = State(initialValue: data.projectionHorizon)
-        _recurringIncomes = State(initialValue: data.recurringIncomes)
-        _sbnInvestments = State(initialValue: data.sbnInvestments)
-        _debts = State(initialValue: data.debts)
+    init(store: FinanceStore = FinanceStore()) {
+        self.store = store
     }
 
     private var monthlySalary: Decimal {
-        recurringIncomes.reduce(0) { $0 + $1.amount }
+        store.monthlySalary
     }
 
     private var monthlySbnCoupon: Decimal {
-        sbnInvestments.reduce(0) { $0 + $1.estimatedMonthlyCoupon }
+        store.monthlySbnCoupon
     }
 
     private var monthlyDebtInstallment: Decimal {
-        debts.reduce(0) { $0 + $1.estimatedMonthlyInstallment }
-    }
-
-    private var investmentPrincipal: Decimal {
-        sbnInvestments.reduce(0) { $0 + $1.principal }
-    }
-
-    private var totalDebt: Decimal {
-        debts.reduce(0) { $0 + $1.remainingAmount }
-    }
-
-    private var currentNetWorth: Decimal {
-        data.liquidAssets + investmentPrincipal - totalDebt
+        store.monthlyDebtInstallment
     }
 
     private var projectedNetWorth: Decimal {
-        let paymentCount = Decimal(projectedPaymentCount)
-
-        return currentNetWorth
-            + (monthlySalary * paymentCount)
-            + (monthlySbnCoupon * paymentCount)
-            - (monthlyDebtInstallment * paymentCount)
+        store.projectedNetWorth
     }
 
     private var gapToTarget: Decimal {
-        projectedNetWorth - data.netWorthTarget
+        store.gapToTarget
     }
 
-    private var projectedPaymentCount: Int {
-        let calendar = Calendar(identifier: .gregorian)
-        let start = calendar.dateInterval(of: .month, for: data.referenceDate)?.start ?? data.referenceDate
-        let end = calendar.dateInterval(of: .month, for: projectionHorizon)?.start ?? projectionHorizon
-        let months = calendar.dateComponents([.month], from: start, to: end).month ?? 0
+    private var projectionHorizon: Binding<Date> {
+        Binding(
+            get: { store.projectionHorizon },
+            set: { store.projectionHorizon = $0 }
+        )
+    }
 
-        return max(months + 1, 0)
+    private var investments: Binding<[SBNInvestment]> {
+        Binding(
+            get: { store.sbnInvestments },
+            set: { store.sbnInvestments = $0 }
+        )
+    }
+
+    private var debts: Binding<[Debt]> {
+        Binding(
+            get: { store.debts },
+            set: { store.debts = $0 }
+        )
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
                 ProjectionCard(
-                    horizon: projectionHorizon,
+                    horizon: store.projectionHorizon,
                     projectedNetWorth: projectedNetWorth
                 )
 
@@ -116,24 +105,23 @@ struct PlanningView: View {
                     }
                     .buttonStyle(.plain)
 
-                    if showsProjectionCalendar {
-                        ProjectionHorizonCalendar(selection: $projectionHorizon)
-                            .padding(.vertical, 10)
-                            .transition(.opacity.combined(with: .move(edge: .top)))
-                    }
-
                     Button {
-                        withAnimation(.snappy(duration: 0.22)) {
-                            showsProjectionCalendar.toggle()
-                        }
+                        toggleProjectionCalendar()
                     } label: {
-                        WorthlyDisclosureRow(
-                            title: "Projection horizon",
-                            value: WorthlyDateFormatting.projectionHorizon(projectionHorizon),
-                            valueUsesMonospacedDigits: false
+                        ProjectionHorizonDisclosureRow(
+                            value: WorthlyDateFormatting.projectionHorizon(store.projectionHorizon),
+                            isExpanded: showsProjectionCalendar
                         )
                     }
                     .buttonStyle(.plain)
+                    .accessibilityHint("Shows or hides the projection date picker")
+
+                    if showsProjectionCalendar {
+                        ProjectionHorizonCalendar(selection: projectionHorizon)
+                            .padding(.top, 8)
+                            .padding(.bottom, 10)
+                            .transition(calendarTransition)
+                    }
                 }
                 .padding(.top, 10)
             }
@@ -158,21 +146,21 @@ struct PlanningView: View {
             switch editor {
             case .salary:
                 MonthlySalaryEditorSheet(
-                    incomes: recurringIncomes,
-                    onSave: saveSalaryAmounts
+                    incomes: store.recurringIncomes,
+                    onSave: { store.saveSalaryAmounts($0) }
                 )
                 .presentationDetents([.height(390), .medium])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(28)
                 .presentationBackground(.regularMaterial)
             case .investments:
-                InvestmentEditorSheet(investments: $sbnInvestments)
+                InvestmentEditorSheet(investments: investments)
                     .presentationDetents([.height(420), .medium])
                     .presentationDragIndicator(.visible)
                     .presentationCornerRadius(28)
                     .presentationBackground(.regularMaterial)
             case .debts:
-                DebtEditorSheet(debts: $debts)
+                DebtEditorSheet(debts: debts)
                     .presentationDetents([.height(500), .medium])
                     .presentationDragIndicator(.visible)
                     .presentationCornerRadius(28)
@@ -181,21 +169,17 @@ struct PlanningView: View {
         }
     }
 
-    private func saveSalaryAmounts(_ amounts: [Decimal]) {
-        recurringIncomes = amounts.enumerated().map { index, amount in
-            if recurringIncomes.indices.contains(index) {
-                var income = recurringIncomes[index]
-                income.amount = amount
+    private var calendarTransition: AnyTransition {
+        reduceMotion ? .identity : .opacity.combined(with: .move(edge: .top))
+    }
 
-                return income
+    private func toggleProjectionCalendar() {
+        if reduceMotion {
+            showsProjectionCalendar.toggle()
+        } else {
+            withAnimation(.snappy(duration: 0.22)) {
+                showsProjectionCalendar.toggle()
             }
-
-            return RecurringIncome(
-                id: UUID(),
-                name: "Monthly salary \(index + 1)",
-                amount: amount,
-                payday: 25
-            )
         }
     }
 }
@@ -253,6 +237,40 @@ private struct GapCard: View {
         .padding(12)
         .frame(maxWidth: .infinity, minHeight: 70, alignment: .leading)
         .background(WorthlyCardBackground())
+    }
+}
+
+private struct ProjectionHorizonDisclosureRow: View {
+    let value: String
+    let isExpanded: Bool
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Text("Projection horizon")
+                .font(.body)
+                .foregroundStyle(.primary)
+
+            Spacer(minLength: 12)
+
+            Text(value)
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+
+            Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.tertiary)
+                .frame(width: 16)
+        }
+        .frame(minHeight: 60)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Color(.separator))
+                .frame(height: 0.5)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Projection horizon, \(value)")
+        .accessibilityValue(isExpanded ? "Expanded" : "Collapsed")
     }
 }
 
