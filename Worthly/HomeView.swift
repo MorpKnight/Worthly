@@ -22,18 +22,18 @@ struct HomeView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: WorthlySpacing.sm) {
                 NetWorthCard(
                     netWorth: store.currentNetWorth,
                     changeText: store.netWorthChangeText
                 )
 
                 ViewThatFits(in: .horizontal) {
-                    HStack(spacing: 10) {
+                    HStack(spacing: WorthlySpacing.sm) {
                         metricCards
                     }
 
-                    VStack(spacing: 10) {
+                    VStack(spacing: WorthlySpacing.sm) {
                         metricCards
                     }
                 }
@@ -51,11 +51,11 @@ struct HomeView: View {
                 }
 
                 if !store.checklistActions.isEmpty {
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: WorthlySpacing.sm) {
                         Text("Next action")
                             .font(.headline)
 
-                        VStack(alignment: .leading, spacing: 10) {
+                        VStack(alignment: .leading, spacing: WorthlySpacing.sm) {
                             ForEach(store.checklistActions) { action in
                                 ChecklistRow(title: action.title, isCompleted: action.isCompleted)
                             }
@@ -64,7 +64,7 @@ struct HomeView: View {
                 }
 
                 if !store.recentTransactions.isEmpty {
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: WorthlySpacing.sm) {
                         Text("Recent Transactions")
                             .font(.headline)
 
@@ -85,9 +85,9 @@ struct HomeView: View {
                     }
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
-            .padding(.bottom, 32)
+            .padding(.horizontal, WorthlySpacing.screenHorizontal)
+            .padding(.top, WorthlySpacing.xs)
+            .padding(.bottom, WorthlySpacing.pageBottom)
         }
         .background(Color(.systemBackground))
         .navigationTitle("Overview")
@@ -140,7 +140,7 @@ private struct NetWorthCard: View {
     let changeText: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: WorthlySpacing.xs) {
             Text("Current Net Worth")
                 .font(.subheadline)
 
@@ -159,13 +159,13 @@ private struct NetWorthCard: View {
                     WorthlyAmountText(text: changeText, font: .caption)
                 }
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: WorthlySpacing.xxs) {
                     formulaText
                     WorthlyAmountText(text: changeText, font: .caption)
                 }
             }
         }
-        .padding(12)
+        .padding(WorthlySpacing.sm)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(WorthlyCardBackground())
         .accessibilityElement(children: .combine)
@@ -189,8 +189,8 @@ private struct GuidedSetupCard: View {
     let onAddInvestment: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: WorthlySpacing.md) {
+            VStack(alignment: .leading, spacing: WorthlySpacing.xxs) {
                 Text("Build your money map")
                     .font(.headline)
 
@@ -200,7 +200,7 @@ private struct GuidedSetupCard: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            VStack(spacing: 8) {
+            VStack(spacing: WorthlySpacing.xs) {
                 if !hasAccount {
                     GuidedSetupButton(
                         title: "Add first account",
@@ -236,7 +236,7 @@ private struct GuidedSetupCard: View {
                 }
             }
         }
-        .padding(16)
+        .padding(WorthlySpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(WorthlyCardBackground())
         .accessibilityElement(children: .contain)
@@ -286,7 +286,7 @@ private struct GuidedSetupButton: View {
     private var label: some View {
         Label(title, systemImage: systemImage)
             .font(.subheadline.weight(.semibold))
-            .frame(maxWidth: .infinity, minHeight: 42)
+            .frame(maxWidth: .infinity, minHeight: 44)
     }
 }
 
@@ -296,7 +296,7 @@ private struct MetricCard: View {
     let valueColor: Color
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: WorthlySpacing.lg) {
             Text(title)
                 .font(.subheadline)
 
@@ -307,7 +307,7 @@ private struct MetricCard: View {
                 minimumScaleFactor: 0.8
             )
         }
-        .padding(12)
+        .padding(WorthlySpacing.sm)
         .frame(maxWidth: .infinity, minHeight: 98, alignment: .leading)
         .background(WorthlyCardBackground())
         .accessibilityElement(children: .combine)
@@ -320,7 +320,7 @@ private struct ChecklistRow: View {
     let isCompleted: Bool
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: WorthlySpacing.sm) {
             Image(systemName: isCompleted ? "circle.fill" : "circle")
                 .font(.system(size: 17, weight: .regular))
                 .foregroundStyle(.primary)

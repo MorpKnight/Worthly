@@ -31,7 +31,7 @@ struct HistoryView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: WorthlySpacing.sm) {
                 Picker("Transaction filter", selection: $selectedFilter) {
                     ForEach(HistoryFilter.allCases) { filter in
                         Text(filter.title)
@@ -77,9 +77,9 @@ struct HistoryView: View {
                     }
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
-            .padding(.bottom, 40)
+            .padding(.horizontal, WorthlySpacing.screenHorizontal)
+            .padding(.top, WorthlySpacing.xs)
+            .padding(.bottom, WorthlySpacing.pageBottom)
         }
         .background(Color(.systemBackground))
         .navigationTitle("History")
@@ -135,7 +135,7 @@ struct HistoryView: View {
 
 private struct HistoryEmptyState: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: WorthlySpacing.sm) {
             Image(systemName: "list.bullet.rectangle")
                 .font(.title2.weight(.semibold))
                 .foregroundStyle(WorthlyAccessibleColor.accent)
@@ -148,7 +148,7 @@ private struct HistoryEmptyState: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(16)
+        .padding(WorthlySpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(WorthlyCardBackground())
     }
@@ -216,7 +216,7 @@ private struct SearchField: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        HStack(alignment: dynamicTypeSize.isWorthlyAccessibilitySize ? .top : .center, spacing: 8) {
+        HStack(alignment: dynamicTypeSize.isWorthlyAccessibilitySize ? .top : .center, spacing: WorthlySpacing.xs) {
             Image(systemName: "magnifyingglass")
                 .font(.title3.weight(.medium))
                 .foregroundStyle(.secondary)
@@ -226,14 +226,14 @@ private struct SearchField: View {
                 .foregroundStyle(.secondary)
                 .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? nil : 1)
 
-            Spacer(minLength: 8)
+            Spacer(minLength: WorthlySpacing.xs)
 
             Image(systemName: "mic")
                 .font(.body.weight(.medium))
                 .foregroundStyle(.secondary)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 10 : 0)
+        .padding(.horizontal, WorthlySpacing.sm)
+        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? WorthlySpacing.sm : 0)
         .frame(minHeight: 48)
         .background(Color(.secondarySystemGroupedBackground), in: Capsule())
         .accessibilityLabel("Search transactions")
@@ -256,12 +256,12 @@ private struct JuneSummaryCard: View {
                 countBlock
             }
 
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: WorthlySpacing.sm) {
                 amountBlock
                 countBlock
             }
         }
-        .padding(12)
+        .padding(WorthlySpacing.sm)
         .frame(maxWidth: .infinity, minHeight: 98, alignment: .leading)
         .background(WorthlyCardBackground())
         .accessibilityElement(children: .combine)
@@ -273,7 +273,7 @@ private struct JuneSummaryCard: View {
     }
 
     private var amountBlock: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: WorthlySpacing.md) {
             Text("June summary")
                 .font(.caption)
 
@@ -286,7 +286,7 @@ private struct JuneSummaryCard: View {
     }
 
     private var countBlock: some View {
-        VStack(alignment: dynamicTypeSize.isWorthlyAccessibilitySize ? .leading : .trailing, spacing: 2) {
+        VStack(alignment: dynamicTypeSize.isWorthlyAccessibilitySize ? .leading : .trailing, spacing: WorthlySpacing.xxs) {
             WorthlyAmountText(text: "\(count)x", font: .caption)
 
             Text("Transactions")
@@ -300,7 +300,7 @@ private struct HistorySection<Content: View>: View {
     @ViewBuilder let content: Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: WorthlySpacing.xs) {
             Text(title)
                 .font(.headline)
 
@@ -489,8 +489,8 @@ private struct HistoryTransactionEditorSheet: View {
             onCancel: { dismiss() },
             onSave: save
         ) {
-            VStack(spacing: 12) {
-                VStack(spacing: 8) {
+            VStack(spacing: WorthlySpacing.sm) {
+                VStack(spacing: WorthlySpacing.xs) {
                     Text("Amount")
                         .font(.body)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -578,11 +578,11 @@ private struct HistoryTransactionEditorSheet: View {
 
                     HistoryEditorNotesRow(note: $note)
                 }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
+                .padding(.horizontal, WorthlySpacing.md)
+                .padding(.vertical, WorthlySpacing.xs)
                 .background(
                     Color(.secondarySystemGroupedBackground),
-                    in: RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    in: RoundedRectangle(cornerRadius: WorthlySpacing.xl, style: .continuous)
                 )
             }
         }
@@ -675,20 +675,20 @@ private struct HistorySheetContainer<Content: View>: View {
                     .font(.headline)
                     .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? 2 : 1)
                     .minimumScaleFactor(dynamicTypeSize.isWorthlyAccessibilitySize ? 1 : 0.82)
-                    .padding(.horizontal, 62)
+                    .padding(.horizontal, WorthlySpacing.sheetTitleHorizontal)
             }
-            .padding(.top, 14)
-            .padding(.horizontal, 8)
+            .padding(.top, WorthlySpacing.md)
+            .padding(.horizontal, WorthlySpacing.xs)
 
             ScrollView {
                 content
-                    .padding(.top, 18)
-                    .padding(.horizontal, 8)
-                    .padding(.bottom, 26)
+                    .padding(.top, WorthlySpacing.sheetContentTop)
+                    .padding(.horizontal, WorthlySpacing.xs)
+                    .padding(.bottom, WorthlySpacing.sheetContentBottom)
             }
             .scrollIndicators(.hidden)
         }
-        .padding(.horizontal, 14)
+        .padding(.horizontal, WorthlySpacing.sheetHorizontal)
     }
 }
 
@@ -762,14 +762,14 @@ private struct HistoryEditorMenuRow<MenuContent: View>: View {
         Menu {
             menuContent
         } label: {
-            HStack(spacing: 14) {
+            HStack(spacing: WorthlySpacing.md) {
                 Image(systemName: icon)
                     .font(.system(size: 20, weight: .regular))
                     .foregroundStyle(.primary)
                     .frame(width: 30)
 
                 if dynamicTypeSize.isWorthlyAccessibilitySize {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: WorthlySpacing.xxs) {
                         Text(title)
                             .font(.body)
                             .foregroundStyle(.primary)
@@ -789,17 +789,17 @@ private struct HistoryEditorMenuRow<MenuContent: View>: View {
                         .lineLimit(1)
                 }
 
-                Spacer(minLength: 12)
+                Spacer(minLength: WorthlySpacing.sm)
 
                 Image(systemName: "chevron.up.chevron.down")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
-            .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 8 : 0)
+            .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? WorthlySpacing.xs : 0)
             .frame(minHeight: 52)
             .overlay(alignment: .bottom) {
                 HistoryEditorSeparator()
-                    .padding(.leading, 44)
+                    .padding(.leading, WorthlySpacing.rowSeparatorWithIcon)
             }
         }
         .buttonStyle(.plain)
@@ -816,7 +816,7 @@ private struct HistoryEditorDateRow: View {
             selection: $date,
             displayedComponents: .date
         ) {
-            HStack(spacing: 14) {
+            HStack(spacing: WorthlySpacing.md) {
                 Image(systemName: "calendar")
                     .font(.system(size: 20, weight: .regular))
                     .foregroundStyle(.primary)
@@ -827,11 +827,11 @@ private struct HistoryEditorDateRow: View {
                     .foregroundStyle(.primary)
             }
         }
-        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 8 : 0)
+        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? WorthlySpacing.xs : 0)
         .frame(minHeight: 52)
         .overlay(alignment: .bottom) {
             HistoryEditorSeparator()
-                .padding(.leading, 44)
+                .padding(.leading, WorthlySpacing.rowSeparatorWithIcon)
         }
     }
 }
@@ -843,7 +843,7 @@ private struct HistoryEditorNotesRow: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 14) {
+            HStack(spacing: WorthlySpacing.md) {
                 Image(systemName: "list.clipboard")
                     .font(.system(size: 20, weight: .regular))
                     .foregroundStyle(.primary)
@@ -854,7 +854,7 @@ private struct HistoryEditorNotesRow: View {
 
                 Spacer()
             }
-            .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 8 : 0)
+            .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? WorthlySpacing.xs : 0)
             .frame(minHeight: 52)
 
             TextField("Optional", text: $note, axis: .vertical)

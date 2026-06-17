@@ -62,7 +62,7 @@ struct PlanningView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: WorthlySpacing.sm) {
                 if store.hasStartedMoneyMap {
                     ProjectionCard(
                         horizon: store.projectionHorizon,
@@ -76,7 +76,7 @@ struct PlanningView: View {
 
                 Text("Assumptions")
                     .font(.headline)
-                    .padding(.top, 2)
+                    .padding(.top, WorthlySpacing.xxs)
 
                 VStack(spacing: 0) {
                     Button {
@@ -122,16 +122,16 @@ struct PlanningView: View {
 
                     if showsProjectionCalendar {
                         ProjectionHorizonCalendar(selection: projectionHorizon)
-                            .padding(.top, 8)
-                            .padding(.bottom, 10)
+                            .padding(.top, WorthlySpacing.xs)
+                            .padding(.bottom, WorthlySpacing.sm)
                             .transition(calendarTransition)
                     }
                 }
-                .padding(.top, 10)
+                .padding(.top, WorthlySpacing.sm)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
-            .padding(.bottom, 40)
+            .padding(.horizontal, WorthlySpacing.screenHorizontal)
+            .padding(.top, WorthlySpacing.xs)
+            .padding(.bottom, WorthlySpacing.pageBottom)
         }
         .background(Color(.systemBackground))
         .navigationTitle("Planning")
@@ -203,7 +203,7 @@ private struct ProjectionCard: View {
     let projectedNetWorth: Decimal
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: WorthlySpacing.xs) {
             Text("Projected \(WorthlyDateFormatting.projectionHorizon(horizon))")
                 .font(.subheadline)
 
@@ -217,7 +217,7 @@ private struct ProjectionCard: View {
                 .font(.caption)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(12)
+        .padding(WorthlySpacing.sm)
         .frame(maxWidth: .infinity, minHeight: 98, alignment: .leading)
         .background(WorthlyCardBackground())
         .accessibilityElement(children: .combine)
@@ -227,7 +227,7 @@ private struct ProjectionCard: View {
 
 private struct PlanningEmptyStateCard: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: WorthlySpacing.xs) {
             Text("Projection unavailable")
                 .font(.subheadline)
 
@@ -236,7 +236,7 @@ private struct PlanningEmptyStateCard: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(12)
+        .padding(WorthlySpacing.sm)
         .frame(maxWidth: .infinity, minHeight: 90, alignment: .leading)
         .background(WorthlyCardBackground())
     }
@@ -246,7 +246,7 @@ private struct GapCard: View {
     let gap: Decimal
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: WorthlySpacing.xs) {
             Text("Gap to target")
                 .font(.subheadline)
 
@@ -257,7 +257,7 @@ private struct GapCard: View {
                 minimumScaleFactor: 0.78
             )
         }
-        .padding(12)
+        .padding(WorthlySpacing.sm)
         .frame(maxWidth: .infinity, minHeight: 70, alignment: .leading)
         .background(WorthlyCardBackground())
         .accessibilityElement(children: .combine)
@@ -274,8 +274,8 @@ private struct ProjectionHorizonDisclosureRow: View {
     var body: some View {
         Group {
             if dynamicTypeSize.isWorthlyAccessibilitySize {
-                HStack(alignment: .top, spacing: 12) {
-                    VStack(alignment: .leading, spacing: 4) {
+                HStack(alignment: .top, spacing: WorthlySpacing.sm) {
+                    VStack(alignment: .leading, spacing: WorthlySpacing.xxs) {
                         Text("Projection horizon")
                             .font(.body)
                             .foregroundStyle(.primary)
@@ -285,18 +285,18 @@ private struct ProjectionHorizonDisclosureRow: View {
                             .foregroundStyle(.secondary)
                     }
 
-                    Spacer(minLength: 12)
+                    Spacer(minLength: WorthlySpacing.sm)
 
                     chevron
-                        .padding(.top, 4)
+                        .padding(.top, WorthlySpacing.xxs)
                 }
             } else {
-                HStack(spacing: 12) {
+                HStack(spacing: WorthlySpacing.sm) {
                     Text("Projection horizon")
                         .font(.body)
                         .foregroundStyle(.primary)
 
-                    Spacer(minLength: 12)
+                    Spacer(minLength: WorthlySpacing.sm)
 
                     Text(value)
                         .font(.body)
@@ -307,7 +307,7 @@ private struct ProjectionHorizonDisclosureRow: View {
                 }
             }
         }
-        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 8 : 0)
+        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? WorthlySpacing.xs : 0)
         .frame(minHeight: 60)
         .overlay(alignment: .bottom) {
             Rectangle()
@@ -338,9 +338,9 @@ private struct ProjectionHorizonCalendar: View {
         )
         .datePickerStyle(.graphical)
         .labelsHidden()
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(WorthlyCardBackground(cornerRadius: 12))
+        .padding(.horizontal, WorthlySpacing.sm)
+        .padding(.vertical, WorthlySpacing.xs)
+        .background(WorthlyCardBackground(cornerRadius: WorthlySpacing.sm))
         .accessibilityLabel("Projection horizon calendar")
     }
 }
@@ -383,7 +383,7 @@ private struct MonthlySalaryEditorSheet: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text("Amount")
                     .font(.body)
-                    .padding(.bottom, 12)
+                .padding(.bottom, WorthlySpacing.sm)
 
                 ForEach(amountTexts.indices, id: \.self) { index in
                     PlanningTextFieldRow(
@@ -432,7 +432,7 @@ private struct InvestmentEditorSheet: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Text("Which one to edit")
                         .font(.body)
-                        .padding(.bottom, 10)
+                        .padding(.bottom, WorthlySpacing.sm)
 
                     ForEach(investments) { investment in
                         PlanningSelectionRow(
@@ -570,7 +570,7 @@ private struct DebtEditorSheet: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Text("Which one to edit")
                         .font(.body)
-                        .padding(.bottom, 10)
+                        .padding(.bottom, WorthlySpacing.sm)
 
                     ForEach(debts) { debt in
                         PlanningSelectionRow(
@@ -752,20 +752,20 @@ private struct PlanningSheetContainer<Content: View>: View {
                     .font(.headline)
                     .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? 2 : 1)
                     .minimumScaleFactor(dynamicTypeSize.isWorthlyAccessibilitySize ? 1 : 0.82)
-                    .padding(.horizontal, 62)
+                    .padding(.horizontal, WorthlySpacing.sheetTitleHorizontal)
             }
-            .padding(.top, 14)
-            .padding(.horizontal, 8)
+            .padding(.top, WorthlySpacing.md)
+            .padding(.horizontal, WorthlySpacing.xs)
 
             ScrollView {
                 content
-                    .padding(.top, 18)
-                    .padding(.horizontal, 8)
-                    .padding(.bottom, 26)
+                    .padding(.top, WorthlySpacing.sheetContentTop)
+                    .padding(.horizontal, WorthlySpacing.xs)
+                    .padding(.bottom, WorthlySpacing.sheetContentBottom)
             }
             .scrollIndicators(.hidden)
         }
-        .padding(.horizontal, 14)
+        .padding(.horizontal, WorthlySpacing.sheetHorizontal)
     }
 }
 
@@ -848,7 +848,7 @@ private struct PlanningTextFieldRow: View {
             .autocorrectionDisabled()
             .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? 1...2 : 1...1)
             .minimumScaleFactor(dynamicTypeSize.isWorthlyAccessibilitySize ? 1 : 0.78)
-            .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 6 : 0)
+            .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? WorthlySpacing.xs : 0)
             .frame(minHeight: 54, alignment: .leading)
             .overlay(alignment: .bottom) {
                 PlanningSeparator()
@@ -862,13 +862,13 @@ private struct PlanningLabeledTextFieldRow: View {
     @Binding var text: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: WorthlySpacing.xs) {
             Text(title)
                 .font(.body)
 
             PlanningTextFieldRow(placeholder: placeholder, text: $text)
         }
-        .padding(.bottom, 12)
+        .padding(.bottom, WorthlySpacing.sm)
     }
 }
 
@@ -882,7 +882,7 @@ private struct PlanningMonthYearFieldRow: View {
     private let months = Array(1...12)
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: WorthlySpacing.xs) {
             Text(title)
                 .font(.body)
 
@@ -909,7 +909,7 @@ private struct PlanningMonthYearFieldRow: View {
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
                 }
-                .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 6 : 0)
+                .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? WorthlySpacing.xs : 0)
                 .frame(minHeight: 54)
                 .overlay(alignment: .bottom) {
                     PlanningSeparator()
@@ -917,7 +917,7 @@ private struct PlanningMonthYearFieldRow: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(.bottom, 12)
+        .padding(.bottom, WorthlySpacing.sm)
     }
 }
 

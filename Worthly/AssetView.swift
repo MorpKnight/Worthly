@@ -67,12 +67,12 @@ struct AssetView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: WorthlySpacing.sm) {
                 TotalAssetCard(totalAsset: totalAssets)
 
                 if hasAssetAllocation {
                     AssetCompositionChart(slices: allocationSlices)
-                        .padding(.top, 2)
+                        .padding(.top, WorthlySpacing.xxs)
                 }
 
                 if sortedAccounts.isEmpty {
@@ -132,7 +132,7 @@ struct AssetView: View {
                         title: "Liabilities",
                         amount: IDRFormatting.compact(totalDebt)
                     )
-                    .padding(.top, 8)
+                    .padding(.top, WorthlySpacing.xs)
 
                     VStack(spacing: 0) {
                         ForEach(sortedDebts) { debt in
@@ -152,9 +152,9 @@ struct AssetView: View {
                     }
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
-            .padding(.bottom, 40)
+            .padding(.horizontal, WorthlySpacing.screenHorizontal)
+            .padding(.top, WorthlySpacing.xs)
+            .padding(.bottom, WorthlySpacing.pageBottom)
         }
         .background(Color(.systemBackground))
         .navigationTitle("Assets")
@@ -273,7 +273,7 @@ private struct TotalAssetCard: View {
     let totalAsset: Decimal
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: WorthlySpacing.xs) {
             Text("Total Assets")
                 .font(.subheadline)
 
@@ -283,7 +283,7 @@ private struct TotalAssetCard: View {
                 minimumScaleFactor: 0.78
             )
         }
-        .padding(12)
+        .padding(WorthlySpacing.sm)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(WorthlyCardBackground())
         .accessibilityElement(children: .combine)
@@ -295,7 +295,7 @@ private struct AssetEmptyState: View {
     let onAddAccount: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: WorthlySpacing.sm) {
             Image(systemName: "wallet.pass")
                 .font(.title2.weight(.semibold))
                 .foregroundStyle(WorthlyAccessibleColor.accent)
@@ -315,7 +315,7 @@ private struct AssetEmptyState: View {
             }
             .buttonStyle(.borderedProminent)
         }
-        .padding(16)
+        .padding(WorthlySpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(WorthlyCardBackground())
     }
@@ -391,7 +391,7 @@ struct AddAssetEditorSheet: View {
             onCancel: { dismiss() },
             onSave: save
         ) {
-            VStack(spacing: 12) {
+            VStack(spacing: WorthlySpacing.sm) {
                 Picker("Asset type", selection: selectedKindBinding) {
                     ForEach(AddAssetKind.allCases) { kind in
                         Text(kind.title)
@@ -747,20 +747,20 @@ private struct AssetEditorSheetContainer<Content: View>: View {
                     .font(.headline)
                     .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? 2 : 1)
                     .minimumScaleFactor(dynamicTypeSize.isWorthlyAccessibilitySize ? 1 : 0.82)
-                    .padding(.horizontal, 62)
+                    .padding(.horizontal, WorthlySpacing.sheetTitleHorizontal)
             }
-            .padding(.top, 14)
-            .padding(.horizontal, 8)
+            .padding(.top, WorthlySpacing.md)
+            .padding(.horizontal, WorthlySpacing.xs)
 
             ScrollView {
                 content
-                    .padding(.top, 18)
-                    .padding(.horizontal, 8)
-                    .padding(.bottom, 26)
+                    .padding(.top, WorthlySpacing.sheetContentTop)
+                    .padding(.horizontal, WorthlySpacing.xs)
+                    .padding(.bottom, WorthlySpacing.sheetContentBottom)
             }
             .scrollIndicators(.hidden)
         }
-        .padding(.horizontal, 14)
+        .padding(.horizontal, WorthlySpacing.sheetHorizontal)
     }
 }
 
@@ -821,11 +821,11 @@ private struct AssetEditorFormGroup<Content: View>: View {
         VStack(spacing: 0) {
             content
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
+        .padding(.horizontal, WorthlySpacing.md)
+        .padding(.vertical, WorthlySpacing.xs)
         .background(
             Color(.secondarySystemGroupedBackground),
-            in: RoundedRectangle(cornerRadius: 22, style: .continuous)
+            in: RoundedRectangle(cornerRadius: WorthlySpacing.xl, style: .continuous)
         )
     }
 }
@@ -840,13 +840,13 @@ private struct AssetEditorTextFieldRow: View {
     var keyboardType: UIKeyboardType = .default
 
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: WorthlySpacing.md) {
             Image(systemName: icon)
                 .font(.system(size: 20, weight: .regular))
                 .foregroundStyle(.primary)
                 .frame(width: 30)
 
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: WorthlySpacing.xxs) {
                 Text(title)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -861,11 +861,11 @@ private struct AssetEditorTextFieldRow: View {
                     .minimumScaleFactor(dynamicTypeSize.isWorthlyAccessibilitySize ? 1 : 0.78)
             }
         }
-        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 8 : 0)
+        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? WorthlySpacing.xs : 0)
         .frame(minHeight: 58)
         .overlay(alignment: .bottom) {
             AssetEditorSeparator()
-                .padding(.leading, 44)
+                .padding(.leading, WorthlySpacing.rowSeparatorWithIcon)
         }
     }
 }
@@ -894,14 +894,14 @@ private struct AssetEditorMenuRow<MenuContent: View>: View {
         Menu {
             menuContent
         } label: {
-            HStack(spacing: 14) {
+            HStack(spacing: WorthlySpacing.md) {
                 Image(systemName: icon)
                     .font(.system(size: 20, weight: .regular))
                     .foregroundStyle(.primary)
                     .frame(width: 30)
 
                 if dynamicTypeSize.isWorthlyAccessibilitySize {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: WorthlySpacing.xxs) {
                         Text(title)
                             .font(.body)
                             .foregroundStyle(.primary)
@@ -921,17 +921,17 @@ private struct AssetEditorMenuRow<MenuContent: View>: View {
                         .lineLimit(1)
                 }
 
-                Spacer(minLength: 12)
+                Spacer(minLength: WorthlySpacing.sm)
 
                 Image(systemName: "chevron.up.chevron.down")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
-            .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 8 : 0)
+            .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? WorthlySpacing.xs : 0)
             .frame(minHeight: 52)
             .overlay(alignment: .bottom) {
                 AssetEditorSeparator()
-                    .padding(.leading, 44)
+                    .padding(.leading, WorthlySpacing.rowSeparatorWithIcon)
             }
         }
         .buttonStyle(.plain)
@@ -950,7 +950,7 @@ private struct AssetEditorDateRow: View {
             selection: $date,
             displayedComponents: .date
         ) {
-            HStack(spacing: 14) {
+            HStack(spacing: WorthlySpacing.md) {
                 Image(systemName: icon)
                     .font(.system(size: 20, weight: .regular))
                     .foregroundStyle(.primary)
@@ -961,11 +961,11 @@ private struct AssetEditorDateRow: View {
                     .foregroundStyle(.primary)
             }
         }
-        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 8 : 0)
+        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? WorthlySpacing.xs : 0)
         .frame(minHeight: 52)
         .overlay(alignment: .bottom) {
             AssetEditorSeparator()
-                .padding(.leading, 44)
+                .padding(.leading, WorthlySpacing.rowSeparatorWithIcon)
         }
     }
 }
@@ -990,8 +990,8 @@ private struct AssetCompositionChart: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: WorthlySpacing.md) {
+            VStack(alignment: .leading, spacing: WorthlySpacing.xxs) {
                 Text("Asset Allocation")
                     .font(.headline)
 
@@ -1001,7 +1001,7 @@ private struct AssetCompositionChart: View {
             }
 
             ViewThatFits(in: .horizontal) {
-                HStack(alignment: .center, spacing: 18) {
+                HStack(alignment: .center, spacing: WorthlySpacing.lg) {
                     AssetDonutChart(slices: positiveSlices)
                         .frame(width: 164, height: 164)
 
@@ -1009,7 +1009,7 @@ private struct AssetCompositionChart: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
-                VStack(spacing: 12) {
+                VStack(spacing: WorthlySpacing.sm) {
                     AssetDonutChart(slices: positiveSlices)
                         .frame(width: 216, height: 216)
                         .frame(maxWidth: .infinity)
@@ -1023,7 +1023,7 @@ private struct AssetCompositionChart: View {
     }
 
     private var allocationLegend: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: WorthlySpacing.xs) {
             ForEach(positiveSlices) { slice in
                 AllocationLegendRow(
                     slice: slice,
@@ -1122,7 +1122,7 @@ private struct AssetDonutChart: View {
                 }
             }
 
-            VStack(spacing: 2) {
+            VStack(spacing: WorthlySpacing.xxs) {
                 Text("Assets")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -1145,8 +1145,8 @@ private struct AllocationLegendRow: View {
     var body: some View {
         Group {
             if dynamicTypeSize.isWorthlyAccessibilitySize {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 10) {
+                VStack(alignment: .leading, spacing: WorthlySpacing.xxs) {
+                    HStack(spacing: WorthlySpacing.sm) {
                         marker
                         titleText
                     }
@@ -1160,15 +1160,15 @@ private struct AllocationLegendRow: View {
                     )
                 }
             } else {
-                HStack(spacing: 10) {
+                HStack(spacing: WorthlySpacing.sm) {
                     marker
 
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: WorthlySpacing.xxs) {
                         titleText
                         percentageText
                     }
 
-                    Spacer(minLength: 12)
+                    Spacer(minLength: WorthlySpacing.sm)
 
                     WorthlyAmountText(
                         text: IDRFormatting.compact(slice.amount),
@@ -1185,7 +1185,7 @@ private struct AllocationLegendRow: View {
     private var marker: some View {
         Circle()
             .fill(slice.color)
-            .frame(width: 14, height: 14)
+            .frame(width: WorthlySpacing.md, height: WorthlySpacing.md)
     }
 
     private var titleText: some View {

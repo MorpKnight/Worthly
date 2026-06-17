@@ -36,24 +36,24 @@ struct WorthlyTransactionRow: View {
                 compactLayout
             }
         }
-        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 8 : 0)
+        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? WorthlySpacing.xs : 0)
         .frame(minHeight: 60)
         .overlay(alignment: .bottom) {
             Rectangle()
                 .fill(Color(.separator))
                 .frame(height: 0.5)
-                .padding(.leading, 56)
+                .padding(.leading, WorthlySpacing.transactionSeparator)
         }
         .accessibilityElement(children: .combine)
     }
 
     private var compactLayout: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: WorthlySpacing.md) {
             iconView
 
             titleBlock
 
-            Spacer(minLength: 12)
+            Spacer(minLength: WorthlySpacing.sm)
 
             WorthlyAmountText(text: amount, font: .body, color: amountColor)
 
@@ -62,11 +62,11 @@ struct WorthlyTransactionRow: View {
     }
 
     private var accessibilityLayout: some View {
-        HStack(alignment: .top, spacing: 14) {
+        HStack(alignment: .top, spacing: WorthlySpacing.md) {
             iconView
-                .padding(.top, 2)
+                .padding(.top, WorthlySpacing.xxs)
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: WorthlySpacing.xxs) {
                 titleBlock
 
                 WorthlyAmountText(text: amount, font: .body.weight(.semibold), color: amountColor)
@@ -74,7 +74,7 @@ struct WorthlyTransactionRow: View {
             }
 
             chevronView
-                .padding(.top, 4)
+                .padding(.top, WorthlySpacing.xxs)
         }
     }
 
@@ -87,7 +87,7 @@ struct WorthlyTransactionRow: View {
     }
 
     private var titleBlock: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: WorthlySpacing.xxs) {
             Text(title)
                 .font(.body)
                 .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? nil : 2)

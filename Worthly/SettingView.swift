@@ -29,8 +29,8 @@ struct SettingView: View {
                 Text("Preferences")
                     .font(.headline)
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 14)
+                    .padding(.horizontal, WorthlySpacing.screenHorizontal)
+                    .padding(.bottom, WorthlySpacing.md)
 
                 VStack(spacing: 0) {
                     WorthlyDisclosureRow(
@@ -51,13 +51,13 @@ struct SettingView: View {
                         valueUsesMonospacedDigits: false
                     )
                 }
-                .padding(.bottom, 12)
+                .padding(.bottom, WorthlySpacing.sm)
 
                 Text("Data and app")
                     .font(.headline)
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 14)
+                    .padding(.horizontal, WorthlySpacing.screenHorizontal)
+                    .padding(.bottom, WorthlySpacing.md)
 
                 VStack(spacing: 0) {
                     SettingToggleRow(
@@ -89,8 +89,8 @@ struct SettingView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.top, 8)
-            .padding(.bottom, 40)
+            .padding(.top, WorthlySpacing.xs)
+            .padding(.bottom, WorthlySpacing.pageBottom)
         }
         .background(Color(.systemBackground))
         .navigationTitle("Settings")
@@ -123,14 +123,14 @@ private struct SettingToggleRow: View {
                 .font(.body)
                 .foregroundStyle(.primary)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 8 : 0)
+        .padding(.horizontal, WorthlySpacing.screenHorizontal)
+        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? WorthlySpacing.xs : 0)
         .frame(minHeight: 52)
         .overlay(alignment: .bottom) {
             Rectangle()
                 .fill(Color(.separator))
                 .frame(height: 0.5)
-                .padding(.leading, 16)
+                .padding(.leading, WorthlySpacing.screenHorizontal)
         }
         .accessibilityLabel(title)
         .accessibilityValue(isOn ? "On" : "Off")

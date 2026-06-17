@@ -57,7 +57,7 @@ struct WorthlyDisclosureRow: View {
             }
         }
         .padding(.horizontal, horizontalPadding)
-        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 8 : 0)
+        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? WorthlySpacing.xs : 0)
         .frame(minHeight: rowMinHeight)
         .overlay(alignment: .bottom) {
             Rectangle()
@@ -69,14 +69,14 @@ struct WorthlyDisclosureRow: View {
     }
 
     private var compactLayout: some View {
-        HStack(spacing: icon == nil ? 12 : 14) {
+        HStack(spacing: icon == nil ? WorthlySpacing.sm : WorthlySpacing.md) {
             if icon != nil {
                 iconView
             }
 
             titleBlock
 
-            Spacer(minLength: 12)
+            Spacer(minLength: WorthlySpacing.sm)
 
             if let value {
                 valueView(value)
@@ -89,13 +89,13 @@ struct WorthlyDisclosureRow: View {
     }
 
     private var accessibilityLayout: some View {
-        HStack(alignment: .top, spacing: icon == nil ? 12 : 14) {
+        HStack(alignment: .top, spacing: icon == nil ? WorthlySpacing.sm : WorthlySpacing.md) {
             if icon != nil {
                 iconView
-                    .padding(.top, 2)
+                    .padding(.top, WorthlySpacing.xxs)
             }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: WorthlySpacing.xxs) {
                 titleBlock
 
                 if let value {
@@ -106,7 +106,7 @@ struct WorthlyDisclosureRow: View {
 
             if showsChevron {
                 chevronView
-                    .padding(.top, 4)
+                    .padding(.top, WorthlySpacing.xxs)
             }
         }
     }
@@ -120,7 +120,7 @@ struct WorthlyDisclosureRow: View {
     }
 
     private var titleBlock: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: WorthlySpacing.xxs) {
             Text(title)
                 .font(.body)
                 .foregroundStyle(titleColor)
