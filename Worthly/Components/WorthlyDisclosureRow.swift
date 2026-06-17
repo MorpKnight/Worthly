@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct WorthlyDisclosureRow: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let icon: String?
     let title: String
     let subtitle: String?
@@ -47,48 +49,15 @@ struct WorthlyDisclosureRow: View {
     }
 
     var body: some View {
-        HStack(spacing: icon == nil ? 12 : 14) {
-            if let icon {
-                Image(systemName: icon)
-                    .font(.system(size: 22, weight: .regular))
-                    .foregroundStyle(.primary)
-                    .frame(width: 42, height: 58)
-            }
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.body)
-                    .foregroundStyle(titleColor)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.82)
-
-                if let subtitle {
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.primary)
-                }
-            }
-
-            Spacer(minLength: 12)
-
-            if let value {
-                if valueUsesMonospacedDigits {
-                    WorthlyAmountText(text: value, font: .body, color: valueColor)
-                } else {
-                    Text(value)
-                        .font(.body)
-                        .foregroundStyle(valueColor)
-                        .lineLimit(1)
-                }
-            }
-
-            if showsChevron {
-                Image(systemName: "chevron.right")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.tertiary)
+        Group {
+            if dynamicTypeSize.isWorthlyAccessibilitySize {
+                accessibilityLayout
+            } else {
+                compactLayout
             }
         }
         .padding(.horizontal, horizontalPadding)
+        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 8 : 0)
         .frame(minHeight: rowMinHeight)
         .overlay(alignment: .bottom) {
             Rectangle()
@@ -97,6 +66,92 @@ struct WorthlyDisclosureRow: View {
                 .padding(.leading, separatorLeadingInset)
         }
         .accessibilityElement(children: .combine)
+    }
+
+    private var compactLayout: some View {
+        HStack(spacing: icon == nil ? 12 : 14) {
+            if icon != nil {
+                iconView
+            }
+
+            titleBlock
+
+            Spacer(minLength: 12)
+
+            if let value {
+                valueView(value)
+            }
+
+            if showsChevron {
+                chevronView
+            }
+        }
+    }
+
+    private var accessibilityLayout: some View {
+        HStack(alignment: .top, spacing: icon == nil ? 12 : 14) {
+            if icon != nil {
+                iconView
+                    .padding(.top, 2)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                titleBlock
+
+                if let value {
+                    valueView(value)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+
+            if showsChevron {
+                chevronView
+                    .padding(.top, 4)
+            }
+        }
+    }
+
+    private var iconView: some View {
+        Image(systemName: icon ?? "")
+            .font(.body.weight(.regular))
+            .foregroundStyle(.primary)
+            .frame(width: 42)
+            .frame(minHeight: 44)
+    }
+
+    private var titleBlock: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.body)
+                .foregroundStyle(titleColor)
+                .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? nil : 2)
+                .minimumScaleFactor(dynamicTypeSize.isWorthlyAccessibilitySize ? 1 : 0.82)
+
+            if let subtitle {
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.primary)
+                    .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? nil : 2)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func valueView(_ value: String) -> some View {
+        if valueUsesMonospacedDigits {
+            WorthlyAmountText(text: value, font: .body, color: valueColor)
+        } else {
+            Text(value)
+                .font(.body)
+                .foregroundStyle(valueColor)
+                .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? nil : 1)
+        }
+    }
+
+    private var chevronView: some View {
+        Image(systemName: "chevron.right")
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(.secondary)
     }
 }
 
@@ -114,7 +169,7 @@ struct WorthlyDisclosureRow: View {
 
         WorthlyDisclosureRow(
             title: "Reset local data",
-            titleColor: .red,
+            titleColor: WorthlyAccessibleColor.negative,
             rowMinHeight: 52,
             horizontalPadding: 16,
             separatorLeadingInset: 16,

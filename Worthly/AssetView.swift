@@ -286,6 +286,8 @@ private struct TotalAssetCard: View {
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(WorthlyCardBackground())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Total assets \(IDRFormatting.full(totalAsset))")
     }
 }
 
@@ -296,7 +298,7 @@ private struct AssetEmptyState: View {
         VStack(alignment: .leading, spacing: 12) {
             Image(systemName: "wallet.pass")
                 .font(.title2.weight(.semibold))
-                .foregroundStyle(.blue)
+                .foregroundStyle(WorthlyAccessibleColor.accent)
 
             Text("Add your first account")
                 .font(.headline)
@@ -697,6 +699,8 @@ private struct AssetDebtForm: View {
 }
 
 private struct AssetEditorSheetContainer<Content: View>: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let title: String
     let saveIsEnabled: Bool
     let onCancel: () -> Void
@@ -741,8 +745,8 @@ private struct AssetEditorSheetContainer<Content: View>: View {
 
                 Text(title)
                     .font(.headline)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.82)
+                    .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? 2 : 1)
+                    .minimumScaleFactor(dynamicTypeSize.isWorthlyAccessibilitySize ? 1 : 0.82)
                     .padding(.horizontal, 62)
             }
             .padding(.top, 14)
@@ -775,7 +779,7 @@ private struct AssetSheetCircleButton: View {
     private var background: Color {
         switch style {
         case .primary:
-            .blue
+            WorthlyAccessibleColor.accent
         case .secondary, .disabled:
             Color(.systemGray5)
         }
@@ -788,7 +792,7 @@ private struct AssetSheetCircleButton: View {
         case .secondary:
             .primary
         case .disabled:
-            .secondary.opacity(0.45)
+            .secondary
         }
     }
 
@@ -800,6 +804,7 @@ private struct AssetSheetCircleButton: View {
                 .frame(width: 44, height: 44)
                 .background(background, in: Circle())
         }
+        .opacity(style == .disabled ? 0.7 : 1)
         .buttonStyle(.plain)
         .accessibilityLabel(accessibilityLabel)
     }
@@ -826,6 +831,8 @@ private struct AssetEditorFormGroup<Content: View>: View {
 }
 
 private struct AssetEditorTextFieldRow: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let icon: String
     let title: String
     let placeholder: String
@@ -850,10 +857,11 @@ private struct AssetEditorTextFieldRow: View {
                     .keyboardType(keyboardType)
                     .textInputAutocapitalization(.words)
                     .autocorrectionDisabled()
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.78)
+                    .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? 2 : 1)
+                    .minimumScaleFactor(dynamicTypeSize.isWorthlyAccessibilitySize ? 1 : 0.78)
             }
         }
+        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 8 : 0)
         .frame(minHeight: 58)
         .overlay(alignment: .bottom) {
             AssetEditorSeparator()
@@ -863,6 +871,8 @@ private struct AssetEditorTextFieldRow: View {
 }
 
 private struct AssetEditorMenuRow<MenuContent: View>: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let icon: String
     let title: String
     let value: String
@@ -890,21 +900,34 @@ private struct AssetEditorMenuRow<MenuContent: View>: View {
                     .foregroundStyle(.primary)
                     .frame(width: 30)
 
-                Text(title)
-                    .font(.body)
-                    .foregroundStyle(.primary)
+                if dynamicTypeSize.isWorthlyAccessibilitySize {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(title)
+                            .font(.body)
+                            .foregroundStyle(.primary)
+
+                        Text(value)
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                    }
+                } else {
+                    Text(title)
+                        .font(.body)
+                        .foregroundStyle(.primary)
+
+                    Text(value)
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
 
                 Spacer(minLength: 12)
 
-                Text(value)
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-
                 Image(systemName: "chevron.up.chevron.down")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.secondary)
             }
+            .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 8 : 0)
             .frame(minHeight: 52)
             .overlay(alignment: .bottom) {
                 AssetEditorSeparator()
@@ -916,6 +939,8 @@ private struct AssetEditorMenuRow<MenuContent: View>: View {
 }
 
 private struct AssetEditorDateRow: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let icon: String
     let title: String
     @Binding var date: Date
@@ -936,6 +961,7 @@ private struct AssetEditorDateRow: View {
                     .foregroundStyle(.primary)
             }
         }
+        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 8 : 0)
         .frame(minHeight: 52)
         .overlay(alignment: .bottom) {
             AssetEditorSeparator()
@@ -1111,37 +1137,69 @@ private struct AssetDonutChart: View {
 }
 
 private struct AllocationLegendRow: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let slice: AssetAllocationSlice
     let percentage: String
 
     var body: some View {
-        HStack(spacing: 10) {
-            Circle()
-                .fill(slice.color)
-                .frame(width: 10, height: 10)
+        Group {
+            if dynamicTypeSize.isWorthlyAccessibilitySize {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 10) {
+                        marker
+                        titleText
+                    }
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(slice.title)
-                    .font(.subheadline.weight(.semibold))
-                    .lineLimit(1)
+                    percentageText
 
-                Text(percentage)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
-                    .lineLimit(1)
+                    WorthlyAmountText(
+                        text: IDRFormatting.compact(slice.amount),
+                        font: .subheadline,
+                        color: .secondary
+                    )
+                }
+            } else {
+                HStack(spacing: 10) {
+                    marker
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        titleText
+                        percentageText
+                    }
+
+                    Spacer(minLength: 12)
+
+                    WorthlyAmountText(
+                        text: IDRFormatting.compact(slice.amount),
+                        font: .subheadline,
+                        color: .secondary
+                    )
+                }
             }
-
-            Spacer(minLength: 12)
-
-            WorthlyAmountText(
-                text: IDRFormatting.compact(slice.amount),
-                font: .subheadline,
-                color: .secondary
-            )
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
+    }
+
+    private var marker: some View {
+        Circle()
+            .fill(slice.color)
+            .frame(width: 14, height: 14)
+    }
+
+    private var titleText: some View {
+        Text(slice.title)
+            .font(.subheadline.weight(.semibold))
+            .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? nil : 2)
+    }
+
+    private var percentageText: some View {
+        Text(percentage)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .monospacedDigit()
+            .lineLimit(1)
     }
 }
 
@@ -1157,44 +1215,8 @@ private struct AssetAllocationSlice: Identifiable {
 }
 
 private enum AssetChartPalette {
-    // These pairs clear the HIG/WCAG contrast equation target of 3:1
-    // against system white in light mode and system black in dark mode.
-    static let liquidAccount = adaptiveColor(
-        light: ChartRGB(red: 0, green: 87, blue: 217),
-        dark: ChartRGB(red: 121, green: 167, blue: 255)
-    )
-
-    static let sbnInvestment = adaptiveColor(
-        light: ChartRGB(red: 0, green: 122, blue: 120),
-        dark: ChartRGB(red: 72, green: 214, blue: 210)
-    )
-
-    private static func adaptiveColor(light: ChartRGB, dark: ChartRGB) -> Color {
-        Color(
-            uiColor: UIColor { traitCollection in
-                let rgb = traitCollection.userInterfaceStyle == .dark ? dark : light
-
-                return UIColor(
-                    red: rgb.red,
-                    green: rgb.green,
-                    blue: rgb.blue,
-                    alpha: 1
-                )
-            }
-        )
-    }
-}
-
-private struct ChartRGB {
-    let red: CGFloat
-    let green: CGFloat
-    let blue: CGFloat
-
-    init(red: CGFloat, green: CGFloat, blue: CGFloat) {
-        self.red = red / 255
-        self.green = green / 255
-        self.blue = blue / 255
-    }
+    static let liquidAccount = WorthlyAccessibleColor.liquidAsset
+    static let sbnInvestment = WorthlyAccessibleColor.investment
 }
 
 private struct AssetSectionHeader: View {

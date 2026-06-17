@@ -23,7 +23,7 @@ struct ContentView: View {
                 .tag(tab)
             }
         }
-        .tint(.blue)
+        .tint(WorthlyAccessibleColor.accent)
     }
 
     @ViewBuilder

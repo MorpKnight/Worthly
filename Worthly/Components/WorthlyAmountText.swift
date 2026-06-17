@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct WorthlyAmountText: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let text: String
     let font: Font
     let color: Color
@@ -30,8 +32,9 @@ struct WorthlyAmountText: View {
             .font(font)
             .foregroundStyle(color)
             .monospacedDigit()
-            .lineLimit(1)
-            .minimumScaleFactor(minimumScaleFactor)
+            .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? nil : 1)
+            .minimumScaleFactor(dynamicTypeSize.isWorthlyAccessibilitySize ? 1 : minimumScaleFactor)
+            .multilineTextAlignment(.leading)
     }
 }
 

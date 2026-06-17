@@ -55,11 +55,13 @@ extension FinanceTransaction {
     var displayTint: Color {
         switch type {
         case .income:
-            .green
+            WorthlyAccessibleColor.positive
         case .outcome:
-            category.lowercased().contains("restaurant") ? .teal : .red
+            category.lowercased().contains("restaurant")
+                ? WorthlyAccessibleColor.food
+                : WorthlyAccessibleColor.negative
         case .account:
-            .purple
+            WorthlyAccessibleColor.transfer
         }
     }
 

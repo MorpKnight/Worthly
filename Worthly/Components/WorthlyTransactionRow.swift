@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct WorthlyTransactionRow: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let icon: String
     let title: String
     let subtitle: String
@@ -16,40 +18,25 @@ struct WorthlyTransactionRow: View {
 
     private var amountColor: Color {
         if amount.hasPrefix("+") {
-            return .green
+            return WorthlyAccessibleColor.positive
         }
 
         if amount.hasPrefix("-") {
-            return .red
+            return WorthlyAccessibleColor.negative
         }
 
         return .secondary
     }
 
     var body: some View {
-        HStack(spacing: 14) {
-            Image(systemName: icon)
-                .font(.system(size: 22, weight: .medium))
-                .foregroundStyle(iconTint)
-                .frame(width: 42, height: 54)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.body)
-
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundStyle(.primary)
+        Group {
+            if dynamicTypeSize.isWorthlyAccessibilitySize {
+                accessibilityLayout
+            } else {
+                compactLayout
             }
-
-            Spacer(minLength: 12)
-
-            WorthlyAmountText(text: amount, font: .body, color: amountColor)
-
-            Image(systemName: "chevron.right")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.tertiary)
         }
+        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 8 : 0)
         .frame(minHeight: 60)
         .overlay(alignment: .bottom) {
             Rectangle()
@@ -58,6 +45,64 @@ struct WorthlyTransactionRow: View {
                 .padding(.leading, 56)
         }
         .accessibilityElement(children: .combine)
+    }
+
+    private var compactLayout: some View {
+        HStack(spacing: 14) {
+            iconView
+
+            titleBlock
+
+            Spacer(minLength: 12)
+
+            WorthlyAmountText(text: amount, font: .body, color: amountColor)
+
+            chevronView
+        }
+    }
+
+    private var accessibilityLayout: some View {
+        HStack(alignment: .top, spacing: 14) {
+            iconView
+                .padding(.top, 2)
+
+            VStack(alignment: .leading, spacing: 4) {
+                titleBlock
+
+                WorthlyAmountText(text: amount, font: .body.weight(.semibold), color: amountColor)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            chevronView
+                .padding(.top, 4)
+        }
+    }
+
+    private var iconView: some View {
+        Image(systemName: icon)
+            .font(.body.weight(.medium))
+            .foregroundStyle(iconTint)
+            .frame(width: 42)
+            .frame(minHeight: 44)
+    }
+
+    private var titleBlock: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.body)
+                .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? nil : 2)
+
+            Text(subtitle)
+                .font(.caption)
+                .foregroundStyle(.primary)
+                .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? nil : 2)
+        }
+    }
+
+    private var chevronView: some View {
+        Image(systemName: "chevron.right")
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(.secondary)
     }
 }
 
@@ -68,7 +113,7 @@ struct WorthlyTransactionRow: View {
             title: "Salary",
             subtitle: "Income - BCA",
             amount: "+ Rp 8M",
-            iconTint: .green
+            iconTint: WorthlyAccessibleColor.positive
         )
 
         WorthlyTransactionRow(

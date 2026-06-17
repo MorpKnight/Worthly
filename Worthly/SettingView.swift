@@ -79,7 +79,7 @@ struct SettingView: View {
                     } label: {
                         WorthlyDisclosureRow(
                             title: "Reset local data",
-                            titleColor: .red,
+                            titleColor: WorthlyAccessibleColor.negative,
                             rowMinHeight: 52,
                             horizontalPadding: 16,
                             separatorLeadingInset: 16,
@@ -112,6 +112,8 @@ struct SettingView: View {
 }
 
 private struct SettingToggleRow: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let title: String
     @Binding var isOn: Bool
 
@@ -122,6 +124,7 @@ private struct SettingToggleRow: View {
                 .foregroundStyle(.primary)
         }
         .padding(.horizontal, 16)
+        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 8 : 0)
         .frame(minHeight: 52)
         .overlay(alignment: .bottom) {
             Rectangle()
@@ -129,6 +132,8 @@ private struct SettingToggleRow: View {
                 .frame(height: 0.5)
                 .padding(.leading, 16)
         }
+        .accessibilityLabel(title)
+        .accessibilityValue(isOn ? "On" : "Off")
     }
 }
 

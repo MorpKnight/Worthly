@@ -28,18 +28,14 @@ struct HomeView: View {
                     changeText: store.netWorthChangeText
                 )
 
-                HStack(spacing: 10) {
-                    MetricCard(
-                        title: "Cashflow",
-                        value: IDRFormatting.signedCompact(store.currentMonthCashflow),
-                        valueColor: store.currentMonthCashflow < 0 ? .red : .green
-                    )
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 10) {
+                        metricCards
+                    }
 
-                    MetricCard(
-                        title: "View Planning",
-                        value: IDRFormatting.compact(store.projectedNetWorth),
-                        valueColor: .primary
-                    )
+                    VStack(spacing: 10) {
+                        metricCards
+                    }
                 }
 
                 if showsGuidedSetup {
@@ -120,6 +116,23 @@ struct HomeView: View {
             .presentationBackground(.regularMaterial)
         }
     }
+
+    @ViewBuilder
+    private var metricCards: some View {
+        MetricCard(
+            title: "Cashflow",
+            value: IDRFormatting.signedCompact(store.currentMonthCashflow),
+            valueColor: store.currentMonthCashflow < 0
+                ? WorthlyAccessibleColor.negative
+                : WorthlyAccessibleColor.positive
+        )
+
+        MetricCard(
+            title: "View Planning",
+            value: IDRFormatting.compact(store.projectedNetWorth),
+            valueColor: .primary
+        )
+    }
 }
 
 private struct NetWorthCard: View {
@@ -137,18 +150,32 @@ private struct NetWorthCard: View {
                 minimumScaleFactor: 0.78
             )
 
-            HStack(alignment: .firstTextBaseline) {
-                Text("Liquid Assets + Investments - Liabilities")
-                    .font(.caption)
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .firstTextBaseline) {
+                    formulaText
 
-                Spacer()
+                    Spacer()
 
-                WorthlyAmountText(text: changeText, font: .caption)
+                    WorthlyAmountText(text: changeText, font: .caption)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    formulaText
+                    WorthlyAmountText(text: changeText, font: .caption)
+                }
             }
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(WorthlyCardBackground())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Current net worth \(IDRFormatting.full(netWorth)), change \(changeText)")
+    }
+
+    private var formulaText: some View {
+        Text("Liquid Assets + Investments - Liabilities")
+            .font(.caption)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -212,6 +239,27 @@ private struct GuidedSetupCard: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(WorthlyCardBackground())
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Build your money map")
+        .accessibilityValue(setupProgress)
+    }
+
+    private var setupProgress: String {
+        var completed: [String] = []
+
+        if hasAccount {
+            completed.append("account added")
+        }
+
+        if hasLiabilityAnswer {
+            completed.append("liability status answered")
+        }
+
+        if hasInvestment {
+            completed.append("investment added")
+        }
+
+        return completed.isEmpty ? "No setup steps completed" : completed.joined(separator: ", ")
     }
 }
 
@@ -262,6 +310,8 @@ private struct MetricCard: View {
         .padding(12)
         .frame(maxWidth: .infinity, minHeight: 98, alignment: .leading)
         .background(WorthlyCardBackground())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title), \(value)")
     }
 }
 

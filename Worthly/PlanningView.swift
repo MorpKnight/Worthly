@@ -220,6 +220,8 @@ private struct ProjectionCard: View {
         .padding(12)
         .frame(maxWidth: .infinity, minHeight: 98, alignment: .leading)
         .background(WorthlyCardBackground())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Projected \(WorthlyDateFormatting.projectionHorizon(horizon)), \(IDRFormatting.full(projectedNetWorth))")
     }
 }
 
@@ -251,38 +253,61 @@ private struct GapCard: View {
             WorthlyAmountText(
                 text: IDRFormatting.signedCompact(gap),
                 font: .title2.weight(.bold),
-                color: gap < 0 ? .red : .green,
+                color: gap < 0 ? WorthlyAccessibleColor.negative : WorthlyAccessibleColor.positive,
                 minimumScaleFactor: 0.78
             )
         }
         .padding(12)
         .frame(maxWidth: .infinity, minHeight: 70, alignment: .leading)
         .background(WorthlyCardBackground())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Gap to target, \(IDRFormatting.signedCompact(gap))")
     }
 }
 
 private struct ProjectionHorizonDisclosureRow: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let value: String
     let isExpanded: Bool
 
     var body: some View {
-        HStack(spacing: 12) {
-            Text("Projection horizon")
-                .font(.body)
-                .foregroundStyle(.primary)
+        Group {
+            if dynamicTypeSize.isWorthlyAccessibilitySize {
+                HStack(alignment: .top, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Projection horizon")
+                            .font(.body)
+                            .foregroundStyle(.primary)
 
-            Spacer(minLength: 12)
+                        Text(value)
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                    }
 
-            Text(value)
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
+                    Spacer(minLength: 12)
 
-            Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.tertiary)
-                .frame(width: 16)
+                    chevron
+                        .padding(.top, 4)
+                }
+            } else {
+                HStack(spacing: 12) {
+                    Text("Projection horizon")
+                        .font(.body)
+                        .foregroundStyle(.primary)
+
+                    Spacer(minLength: 12)
+
+                    Text(value)
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+
+                    chevron
+                }
+            }
         }
+        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 8 : 0)
         .frame(minHeight: 60)
         .overlay(alignment: .bottom) {
             Rectangle()
@@ -292,6 +317,13 @@ private struct ProjectionHorizonDisclosureRow: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Projection horizon, \(value)")
         .accessibilityValue(isExpanded ? "Expanded" : "Collapsed")
+    }
+
+    private var chevron: some View {
+        Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .frame(width: 16)
     }
 }
 
@@ -368,7 +400,7 @@ private struct MonthlySalaryEditorSheet: View {
                 } label: {
                     Text("Add more")
                         .font(.body.weight(.semibold))
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, minHeight: 54, alignment: .leading)
                         .overlay(alignment: .bottom) {
                             PlanningSeparator()
@@ -666,6 +698,8 @@ private struct DebtDetailEditorSheet: View {
 }
 
 private struct PlanningSheetContainer<Content: View>: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let title: String
     let leadingSystemImage: String
     let leadingAccessibilityLabel: String
@@ -716,8 +750,8 @@ private struct PlanningSheetContainer<Content: View>: View {
 
                 Text(title)
                     .font(.headline)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.82)
+                    .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? 2 : 1)
+                    .minimumScaleFactor(dynamicTypeSize.isWorthlyAccessibilitySize ? 1 : 0.82)
                     .padding(.horizontal, 62)
             }
             .padding(.top, 14)
@@ -750,7 +784,7 @@ private struct PlanningSheetCircleButton: View {
     private var background: Color {
         switch style {
         case .primary:
-            .blue
+            WorthlyAccessibleColor.accent
         case .secondary, .disabled:
             Color(.systemGray5)
         }
@@ -763,7 +797,7 @@ private struct PlanningSheetCircleButton: View {
         case .secondary:
             .primary
         case .disabled:
-            .secondary.opacity(0.45)
+            .secondary
         }
     }
 
@@ -775,6 +809,7 @@ private struct PlanningSheetCircleButton: View {
                 .frame(width: 44, height: 44)
                 .background(background, in: Circle())
         }
+        .opacity(style == .disabled ? 0.7 : 1)
         .buttonStyle(.plain)
         .accessibilityLabel(accessibilityLabel)
     }
@@ -799,16 +834,21 @@ private struct PlanningSelectionRow: View {
 }
 
 private struct PlanningTextFieldRow: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let placeholder: String
     @Binding var text: String
 
     var body: some View {
-        TextField(placeholder, text: $text)
+        TextField(placeholder, text: $text, axis: .vertical)
             .font(.body.weight(.semibold))
             .monospacedDigit()
             .keyboardType(.decimalPad)
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled()
+            .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? 1...2 : 1...1)
+            .minimumScaleFactor(dynamicTypeSize.isWorthlyAccessibilitySize ? 1 : 0.78)
+            .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 6 : 0)
             .frame(minHeight: 54, alignment: .leading)
             .overlay(alignment: .bottom) {
                 PlanningSeparator()
@@ -833,6 +873,8 @@ private struct PlanningLabeledTextFieldRow: View {
 }
 
 private struct PlanningMonthYearFieldRow: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let title: String
     @Binding var date: Date
 
@@ -859,13 +901,15 @@ private struct PlanningMonthYearFieldRow: View {
                     Text(PlanningInputFormatting.monthYear(date))
                         .font(.body.weight(.semibold))
                         .foregroundStyle(.primary)
+                        .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? nil : 1)
 
                     Spacer()
 
                     Image(systemName: "chevron.up.chevron.down")
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.secondary)
                 }
+                .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 6 : 0)
                 .frame(minHeight: 54)
                 .overlay(alignment: .bottom) {
                     PlanningSeparator()

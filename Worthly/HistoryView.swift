@@ -138,7 +138,7 @@ private struct HistoryEmptyState: View {
         VStack(alignment: .leading, spacing: 10) {
             Image(systemName: "list.bullet.rectangle")
                 .font(.title2.weight(.semibold))
-                .foregroundStyle(.blue)
+                .foregroundStyle(WorthlyAccessibleColor.accent)
 
             Text("No transactions yet")
                 .font(.headline)
@@ -213,8 +213,10 @@ private enum HistoryFilter: String, CaseIterable, Identifiable {
 }
 
 private struct SearchField: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(alignment: dynamicTypeSize.isWorthlyAccessibilitySize ? .top : .center, spacing: 8) {
             Image(systemName: "magnifyingglass")
                 .font(.title3.weight(.medium))
                 .foregroundStyle(.secondary)
@@ -222,49 +224,74 @@ private struct SearchField: View {
             Text("Search")
                 .font(.body)
                 .foregroundStyle(.secondary)
+                .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? nil : 1)
 
-            Spacer()
+            Spacer(minLength: 8)
 
             Image(systemName: "mic")
                 .font(.body.weight(.medium))
                 .foregroundStyle(.secondary)
         }
         .padding(.horizontal, 12)
-        .frame(height: 48)
+        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 10 : 0)
+        .frame(minHeight: 48)
         .background(Color(.secondarySystemGroupedBackground), in: Capsule())
         .accessibilityLabel("Search transactions")
     }
 }
 
 private struct JuneSummaryCard: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let total: Decimal
     let count: Int
 
     var body: some View {
-        HStack(alignment: .bottom) {
-            VStack(alignment: .leading, spacing: 16) {
-                Text("June summary")
-                    .font(.caption)
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .bottom) {
+                amountBlock
 
-                WorthlyAmountText(
-                    text: IDRFormatting.signedCompact(total),
-                    font: .title3.weight(.bold),
-                    color: total < 0 ? .red : .green
-                )
+                Spacer()
+
+                countBlock
             }
 
-            Spacer()
-
-            VStack(alignment: .trailing, spacing: 2) {
-                WorthlyAmountText(text: "\(count)x", font: .caption)
-
-                Text("Transactions")
-                    .font(.caption)
+            VStack(alignment: .leading, spacing: 10) {
+                amountBlock
+                countBlock
             }
         }
         .padding(12)
         .frame(maxWidth: .infinity, minHeight: 98, alignment: .leading)
         .background(WorthlyCardBackground())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("June summary, \(IDRFormatting.signedCompact(total)), \(count) transactions")
+    }
+
+    private var amountColor: Color {
+        total < 0 ? WorthlyAccessibleColor.negative : WorthlyAccessibleColor.positive
+    }
+
+    private var amountBlock: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("June summary")
+                .font(.caption)
+
+            WorthlyAmountText(
+                text: IDRFormatting.signedCompact(total),
+                font: .title3.weight(.bold),
+                color: amountColor
+            )
+        }
+    }
+
+    private var countBlock: some View {
+        VStack(alignment: dynamicTypeSize.isWorthlyAccessibilitySize ? .leading : .trailing, spacing: 2) {
+            WorthlyAmountText(text: "\(count)x", font: .caption)
+
+            Text("Transactions")
+                .font(.caption)
+        }
     }
 }
 
@@ -356,6 +383,7 @@ private enum HistoryEditorTransactionType: String, CaseIterable, Identifiable {
 
 private struct HistoryTransactionEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     let mode: HistoryEditorMode
     let transaction: FinanceTransaction?
@@ -467,15 +495,15 @@ private struct HistoryTransactionEditorSheet: View {
                         .font(.body)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                    TextField("Rp 0", text: $amountText)
-                        .font(.system(size: 34, weight: .bold))
+                    TextField("Rp 0", text: $amountText, axis: .vertical)
+                        .font(.largeTitle.weight(.bold))
                         .monospacedDigit()
                         .multilineTextAlignment(.center)
                         .keyboardType(.decimalPad)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.65)
+                        .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? 1...2 : 1...1)
+                        .minimumScaleFactor(dynamicTypeSize.isWorthlyAccessibilitySize ? 1 : 0.65)
 
                     Text(amountHelperText)
                         .font(.caption)
@@ -599,6 +627,8 @@ private struct HistoryTransactionEditorSheet: View {
 }
 
 private struct HistorySheetContainer<Content: View>: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let title: String
     let saveIsEnabled: Bool
     let onCancel: () -> Void
@@ -643,8 +673,8 @@ private struct HistorySheetContainer<Content: View>: View {
 
                 Text(title)
                     .font(.headline)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.82)
+                    .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? 2 : 1)
+                    .minimumScaleFactor(dynamicTypeSize.isWorthlyAccessibilitySize ? 1 : 0.82)
                     .padding(.horizontal, 62)
             }
             .padding(.top, 14)
@@ -677,7 +707,7 @@ private struct HistoryCircleButton: View {
     private var background: Color {
         switch style {
         case .primary:
-            .blue
+            WorthlyAccessibleColor.accent
         case .secondary, .disabled:
             Color(.systemGray5)
         }
@@ -690,7 +720,7 @@ private struct HistoryCircleButton: View {
         case .secondary:
             .primary
         case .disabled:
-            .secondary.opacity(0.45)
+            .secondary
         }
     }
 
@@ -702,12 +732,15 @@ private struct HistoryCircleButton: View {
                 .frame(width: 44, height: 44)
                 .background(background, in: Circle())
         }
+        .opacity(style == .disabled ? 0.7 : 1)
         .buttonStyle(.plain)
         .accessibilityLabel(accessibilityLabel)
     }
 }
 
 private struct HistoryEditorMenuRow<MenuContent: View>: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let icon: String
     let title: String
     let value: String
@@ -735,21 +768,34 @@ private struct HistoryEditorMenuRow<MenuContent: View>: View {
                     .foregroundStyle(.primary)
                     .frame(width: 30)
 
-                Text(title)
-                    .font(.body)
-                    .foregroundStyle(.primary)
+                if dynamicTypeSize.isWorthlyAccessibilitySize {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(title)
+                            .font(.body)
+                            .foregroundStyle(.primary)
+
+                        Text(value)
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                    }
+                } else {
+                    Text(title)
+                        .font(.body)
+                        .foregroundStyle(.primary)
+
+                    Text(value)
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
 
                 Spacer(minLength: 12)
 
-                Text(value)
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-
                 Image(systemName: "chevron.up.chevron.down")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.secondary)
             }
+            .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 8 : 0)
             .frame(minHeight: 52)
             .overlay(alignment: .bottom) {
                 HistoryEditorSeparator()
@@ -761,6 +807,8 @@ private struct HistoryEditorMenuRow<MenuContent: View>: View {
 }
 
 private struct HistoryEditorDateRow: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     @Binding var date: Date
 
     var body: some View {
@@ -779,6 +827,7 @@ private struct HistoryEditorDateRow: View {
                     .foregroundStyle(.primary)
             }
         }
+        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 8 : 0)
         .frame(minHeight: 52)
         .overlay(alignment: .bottom) {
             HistoryEditorSeparator()
@@ -788,6 +837,8 @@ private struct HistoryEditorDateRow: View {
 }
 
 private struct HistoryEditorNotesRow: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     @Binding var note: String
 
     var body: some View {
@@ -803,6 +854,7 @@ private struct HistoryEditorNotesRow: View {
 
                 Spacer()
             }
+            .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? 8 : 0)
             .frame(minHeight: 52)
 
             TextField("Optional", text: $note, axis: .vertical)
