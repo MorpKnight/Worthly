@@ -10,8 +10,14 @@ import SwiftUI
 struct HomeView: View {
     let store: FinanceStore
 
+    @State private var activeSetupAssetKind: AddAssetKind?
+
     init(store: FinanceStore = FinanceStore()) {
         self.store = store
+    }
+
+    private var showsGuidedSetup: Bool {
+        !store.isInitialSetupComplete
     }
 
     var body: some View {
@@ -36,33 +42,49 @@ struct HomeView: View {
                     )
                 }
 
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Next action")
-                        .font(.headline)
+                if showsGuidedSetup {
+                    GuidedSetupCard(
+                        hasAccount: !store.accounts.isEmpty,
+                        hasLiabilityAnswer: !store.debts.isEmpty || store.hasAnsweredLiabilitySetup,
+                        hasInvestment: !store.sbnInvestments.isEmpty,
+                        onAddAccount: { activeSetupAssetKind = .liquidAccount },
+                        onAddLiability: { activeSetupAssetKind = .liability },
+                        onConfirmNoLiabilities: { store.confirmNoLiabilities() },
+                        onAddInvestment: { activeSetupAssetKind = .sbnInvestment }
+                    )
+                }
 
+                if !store.checklistActions.isEmpty {
                     VStack(alignment: .leading, spacing: 10) {
-                        ForEach(store.checklistActions) { action in
-                            ChecklistRow(title: action.title, isCompleted: action.isCompleted)
+                        Text("Next action")
+                            .font(.headline)
+
+                        VStack(alignment: .leading, spacing: 10) {
+                            ForEach(store.checklistActions) { action in
+                                ChecklistRow(title: action.title, isCompleted: action.isCompleted)
+                            }
                         }
                     }
                 }
 
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Recent Transactions")
-                        .font(.headline)
+                if !store.recentTransactions.isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Recent Transactions")
+                            .font(.headline)
 
-                    VStack(spacing: 0) {
-                        ForEach(store.recentTransactions.prefix(5)) { transaction in
-                            WorthlyTransactionRow(
-                                icon: transaction.displayIcon,
-                                title: transaction.category,
-                                subtitle: transaction.subtitle(
-                                    accountName: store.accountName(for: transaction.accountID),
-                                    destinationAccountName: store.destinationAccountName(for: transaction)
-                                ),
-                                amount: transaction.displayAmount,
-                                iconTint: transaction.displayTint
-                            )
+                        VStack(spacing: 0) {
+                            ForEach(store.recentTransactions.prefix(5)) { transaction in
+                                WorthlyTransactionRow(
+                                    icon: transaction.displayIcon,
+                                    title: transaction.category,
+                                    subtitle: transaction.subtitle(
+                                        accountName: store.accountName(for: transaction.accountID),
+                                        destinationAccountName: store.destinationAccountName(for: transaction)
+                                    ),
+                                    amount: transaction.displayAmount,
+                                    iconTint: transaction.displayTint
+                                )
+                            }
                         }
                     }
                 }
@@ -80,9 +102,22 @@ struct HomeView: View {
                     systemImage: "plus",
                     accessibilityLabel: "Add item"
                 ) {
-                    // Static first pass; add flow comes in a later iteration.
+                    activeSetupAssetKind = .liquidAccount
                 }
             }
+        }
+        .sheet(item: $activeSetupAssetKind) { kind in
+            AddAssetEditorSheet(
+                initialKind: kind,
+                referenceDate: store.referenceDate,
+                onSaveAccount: { store.addAccount($0) },
+                onSaveInvestment: { store.addInvestment($0) },
+                onSaveDebt: { store.addDebt($0) }
+            )
+            .presentationDetents([.height(620), .medium])
+            .presentationDragIndicator(.visible)
+            .presentationCornerRadius(28)
+            .presentationBackground(.regularMaterial)
         }
     }
 }
@@ -103,7 +138,7 @@ private struct NetWorthCard: View {
             )
 
             HStack(alignment: .firstTextBaseline) {
-                Text("Liquid Asset + SBN - Debt")
+                Text("Liquid Assets + Investments - Liabilities")
                     .font(.caption)
 
                 Spacer()
@@ -114,6 +149,96 @@ private struct NetWorthCard: View {
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(WorthlyCardBackground())
+    }
+}
+
+private struct GuidedSetupCard: View {
+    let hasAccount: Bool
+    let hasLiabilityAnswer: Bool
+    let hasInvestment: Bool
+    let onAddAccount: () -> Void
+    let onAddLiability: () -> Void
+    let onConfirmNoLiabilities: () -> Void
+    let onAddInvestment: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Build your money map")
+                    .font(.headline)
+
+                Text("Start with where your money is stored, then mark whether you have liabilities.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            VStack(spacing: 8) {
+                if !hasAccount {
+                    GuidedSetupButton(
+                        title: "Add first account",
+                        systemImage: "wallet.pass",
+                        isPrimary: true,
+                        action: onAddAccount
+                    )
+                }
+
+                if hasAccount && !hasLiabilityAnswer {
+                    GuidedSetupButton(
+                        title: "Add liabilities",
+                        systemImage: "creditcard",
+                        isPrimary: true,
+                        action: onAddLiability
+                    )
+
+                    GuidedSetupButton(
+                        title: "I have no liabilities",
+                        systemImage: "checkmark.circle",
+                        isPrimary: false,
+                        action: onConfirmNoLiabilities
+                    )
+                }
+
+                if hasAccount && !hasInvestment {
+                    GuidedSetupButton(
+                        title: "Add investment",
+                        systemImage: "percent",
+                        isPrimary: false,
+                        action: onAddInvestment
+                    )
+                }
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(WorthlyCardBackground())
+    }
+}
+
+private struct GuidedSetupButton: View {
+    let title: String
+    let systemImage: String
+    let isPrimary: Bool
+    let action: () -> Void
+
+    var body: some View {
+        if isPrimary {
+            Button(action: action) {
+                label
+            }
+            .buttonStyle(.borderedProminent)
+        } else {
+            Button(action: action) {
+                label
+            }
+            .buttonStyle(.bordered)
+        }
+    }
+
+    private var label: some View {
+        Label(title, systemImage: systemImage)
+            .font(.subheadline.weight(.semibold))
+            .frame(maxWidth: .infinity, minHeight: 42)
     }
 }
 

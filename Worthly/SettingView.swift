@@ -16,6 +16,13 @@ struct SettingView: View {
         self.store = store
     }
 
+    private var dummyDataBinding: Binding<Bool> {
+        Binding(
+            get: { store.isDummyDataEnabled },
+            set: { store.setDummyDataEnabled($0) }
+        )
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
@@ -53,6 +60,11 @@ struct SettingView: View {
                     .padding(.bottom, 14)
 
                 VStack(spacing: 0) {
+                    SettingToggleRow(
+                        title: "Use dummy data",
+                        isOn: dummyDataBinding
+                    )
+
                     WorthlyDisclosureRow(
                         title: "Local data only",
                         rowMinHeight: 52,
@@ -66,7 +78,7 @@ struct SettingView: View {
                         showsResetConfirmation = true
                     } label: {
                         WorthlyDisclosureRow(
-                            title: "Reset demo data",
+                            title: "Reset local data",
                             titleColor: .red,
                             rowMinHeight: 52,
                             horizontalPadding: 16,
@@ -84,17 +96,38 @@ struct SettingView: View {
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.large)
         .confirmationDialog(
-            "Reset demo data?",
+            "Reset local data?",
             isPresented: $showsResetConfirmation,
             titleVisibility: .visible
         ) {
-            Button("Reset demo data", role: .destructive) {
-                store.resetToSampleData()
+            Button("Reset local data", role: .destructive) {
+                store.resetToEmptyData()
             }
 
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This replaces your local Worthly data with the sample dataset.")
+            Text("This removes your local Worthly data and starts setup again.")
+        }
+    }
+}
+
+private struct SettingToggleRow: View {
+    let title: String
+    @Binding var isOn: Bool
+
+    var body: some View {
+        Toggle(isOn: $isOn) {
+            Text(title)
+                .font(.body)
+                .foregroundStyle(.primary)
+        }
+        .padding(.horizontal, 16)
+        .frame(minHeight: 52)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Color(.separator))
+                .frame(height: 0.5)
+                .padding(.leading, 16)
         }
     }
 }

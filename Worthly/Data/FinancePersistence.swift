@@ -17,6 +17,20 @@ struct FinanceSnapshot: Codable {
     var recurringIncomes: [RecurringIncome]
     var checklistActions: [ChecklistAction]
     var netWorthTarget: Decimal
+    var hasAnsweredLiabilitySetup: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case referenceDate
+        case projectionHorizon
+        case accounts
+        case transactions
+        case sbnInvestments
+        case debts
+        case recurringIncomes
+        case checklistActions
+        case netWorthTarget
+        case hasAnsweredLiabilitySetup
+    }
 
     init(sampleData: SampleFinanceData) {
         referenceDate = sampleData.referenceDate
@@ -28,6 +42,7 @@ struct FinanceSnapshot: Codable {
         recurringIncomes = sampleData.recurringIncomes
         checklistActions = sampleData.checklistActions
         netWorthTarget = sampleData.netWorthTarget
+        hasAnsweredLiabilitySetup = !sampleData.debts.isEmpty
     }
 
     init(
@@ -39,7 +54,8 @@ struct FinanceSnapshot: Codable {
         debts: [Debt],
         recurringIncomes: [RecurringIncome],
         checklistActions: [ChecklistAction],
-        netWorthTarget: Decimal
+        netWorthTarget: Decimal,
+        hasAnsweredLiabilitySetup: Bool
     ) {
         self.referenceDate = referenceDate
         self.projectionHorizon = projectionHorizon
@@ -50,6 +66,68 @@ struct FinanceSnapshot: Codable {
         self.recurringIncomes = recurringIncomes
         self.checklistActions = checklistActions
         self.netWorthTarget = netWorthTarget
+        self.hasAnsweredLiabilitySetup = hasAnsweredLiabilitySetup
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        referenceDate = try container.decode(Date.self, forKey: .referenceDate)
+        projectionHorizon = try container.decode(Date.self, forKey: .projectionHorizon)
+        accounts = try container.decode([Account].self, forKey: .accounts)
+        transactions = try container.decode([FinanceTransaction].self, forKey: .transactions)
+        sbnInvestments = try container.decode([SBNInvestment].self, forKey: .sbnInvestments)
+        debts = try container.decode([Debt].self, forKey: .debts)
+        recurringIncomes = try container.decode([RecurringIncome].self, forKey: .recurringIncomes)
+        checklistActions = try container.decode([ChecklistAction].self, forKey: .checklistActions)
+        netWorthTarget = try container.decode(Decimal.self, forKey: .netWorthTarget)
+        hasAnsweredLiabilitySetup = try container.decodeIfPresent(
+            Bool.self,
+            forKey: .hasAnsweredLiabilitySetup
+        ) ?? !debts.isEmpty
+    }
+
+    static func empty(referenceDate: Date = Date()) -> FinanceSnapshot {
+        let calendar = Calendar.worthly
+        let year = calendar.component(.year, from: referenceDate)
+        let projectionHorizon = DateComponents(
+            calendar: calendar,
+            timeZone: calendar.timeZone,
+            year: year,
+            month: 12,
+            day: 31,
+            hour: 23,
+            minute: 59
+        ).date ?? referenceDate
+
+        return FinanceSnapshot(
+            referenceDate: referenceDate,
+            projectionHorizon: projectionHorizon,
+            accounts: [],
+            transactions: [],
+            sbnInvestments: [],
+            debts: [],
+            recurringIncomes: [],
+            checklistActions: [],
+            netWorthTarget: 0,
+            hasAnsweredLiabilitySetup: false
+        )
+    }
+}
+
+struct FinancePersistenceState: Codable {
+    var activeSnapshot: FinanceSnapshot
+    var preservedUserSnapshot: FinanceSnapshot?
+    var isDummyDataEnabled: Bool
+
+    init(
+        activeSnapshot: FinanceSnapshot,
+        preservedUserSnapshot: FinanceSnapshot? = nil,
+        isDummyDataEnabled: Bool = false
+    ) {
+        self.activeSnapshot = activeSnapshot
+        self.preservedUserSnapshot = preservedUserSnapshot
+        self.isDummyDataEnabled = isDummyDataEnabled
     }
 }
 
@@ -72,7 +150,7 @@ struct FinancePersistence {
         }
     }
 
-    func load() -> FinanceSnapshot? {
+    func load() -> FinancePersistenceState? {
         guard let data = try? Data(contentsOf: fileURL) else {
             return nil
         }
@@ -80,15 +158,23 @@ struct FinancePersistence {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
 
-        return try? decoder.decode(FinanceSnapshot.self, from: data)
+        if let state = try? decoder.decode(FinancePersistenceState.self, from: data) {
+            return state
+        }
+
+        if let snapshot = try? decoder.decode(FinanceSnapshot.self, from: data) {
+            return FinancePersistenceState(activeSnapshot: snapshot)
+        }
+
+        return nil
     }
 
-    func save(_ snapshot: FinanceSnapshot) {
+    func save(_ state: FinancePersistenceState) {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
 
-        guard let data = try? encoder.encode(snapshot) else {
+        guard let data = try? encoder.encode(state) else {
             return
         }
 

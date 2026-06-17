@@ -113,7 +113,7 @@ struct WorthlyDisclosureRow: View {
         WorthlyDisclosureRow(title: "Monthly salary", value: "Rp 13.5M")
 
         WorthlyDisclosureRow(
-            title: "Reset demo data",
+            title: "Reset local data",
             titleColor: .red,
             rowMinHeight: 52,
             horizontalPadding: 16,

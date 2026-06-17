@@ -42,29 +42,37 @@ struct HistoryView: View {
 
                 SearchField()
 
-                JuneSummaryCard(
-                    total: referenceMonthSummary.total,
-                    count: referenceMonthSummary.count
-                )
+                if store.transactions.isEmpty {
+                    HistoryEmptyState()
+                } else {
+                    JuneSummaryCard(
+                        total: referenceMonthSummary.total,
+                        count: referenceMonthSummary.count
+                    )
 
-                ForEach(transactionGroups) { group in
-                    HistorySection(title: group.title) {
-                        ForEach(group.transactions) { transaction in
-                            Button {
-                                activeEditor = .edit(transaction.id)
-                            } label: {
-                                WorthlyTransactionRow(
-                                    icon: transaction.displayIcon,
-                                    title: transaction.category,
-                                    subtitle: transaction.subtitle(
-                                        accountName: store.accountName(for: transaction.accountID),
-                                        destinationAccountName: store.destinationAccountName(for: transaction)
-                                    ),
-                                    amount: transaction.displayAmount,
-                                    iconTint: transaction.displayTint
-                                )
+                    if transactionGroups.isEmpty {
+                        HistoryFilterEmptyState()
+                    } else {
+                        ForEach(transactionGroups) { group in
+                            HistorySection(title: group.title) {
+                                ForEach(group.transactions) { transaction in
+                                    Button {
+                                        activeEditor = .edit(transaction.id)
+                                    } label: {
+                                        WorthlyTransactionRow(
+                                            icon: transaction.displayIcon,
+                                            title: transaction.category,
+                                            subtitle: transaction.subtitle(
+                                                accountName: store.accountName(for: transaction.accountID),
+                                                destinationAccountName: store.destinationAccountName(for: transaction)
+                                            ),
+                                            amount: transaction.displayAmount,
+                                            iconTint: transaction.displayTint
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+                                }
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                 }
@@ -122,6 +130,36 @@ struct HistoryView: View {
                 }
             }
         }
+    }
+}
+
+private struct HistoryEmptyState: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Image(systemName: "list.bullet.rectangle")
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(.blue)
+
+            Text("No transactions yet")
+                .font(.headline)
+
+            Text("Income, expenses, and account transfers will appear here.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(WorthlyCardBackground())
+    }
+}
+
+private struct HistoryFilterEmptyState: View {
+    var body: some View {
+        Text("No transactions match this filter.")
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, minHeight: 80, alignment: .center)
     }
 }
 
@@ -292,7 +330,7 @@ private enum HistoryEditorTransactionType: String, CaseIterable, Identifiable {
     var categories: [String] {
         switch self {
         case .income:
-            ["Salary", "SBN coupon", "Freelance", "Cashback", "Gift", "Side project"]
+            ["Salary", "Investment return", "Freelance", "Cashback", "Gift", "Side project"]
         case .outcome:
             ["Food", "Groceries", "Debt installment", "Restaurant", "Transport", "Travel", "Phone", "Shopping", "Rent", "Health", "Education", "Coffee"]
         case .account:

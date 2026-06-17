@@ -32,6 +32,10 @@ struct AssetView: View {
         store.totalDebt
     }
 
+    private var hasAssetAllocation: Bool {
+        liquidAssets > 0 || investmentPrincipal > 0
+    }
+
     private var allocationSlices: [AssetAllocationSlice] {
         [
             AssetAllocationSlice(
@@ -42,7 +46,7 @@ struct AssetView: View {
             ),
             AssetAllocationSlice(
                 id: "sbn-investment",
-                title: "SBN Investment",
+                title: "Investments",
                 amount: investmentPrincipal,
                 color: AssetChartPalette.sbnInvestment
             )
@@ -66,73 +70,85 @@ struct AssetView: View {
             VStack(alignment: .leading, spacing: 10) {
                 TotalAssetCard(totalAsset: totalAssets)
 
-                AssetCompositionChart(slices: allocationSlices)
-                    .padding(.top, 2)
+                if hasAssetAllocation {
+                    AssetCompositionChart(slices: allocationSlices)
+                        .padding(.top, 2)
+                }
 
-                AssetSectionHeader(
-                    title: "Liquid Account",
-                    amount: IDRFormatting.compact(liquidAssets)
-                )
+                if sortedAccounts.isEmpty {
+                    AssetEmptyState {
+                        activeEditor = .add(.liquidAccount)
+                    }
+                } else {
+                    AssetSectionHeader(
+                        title: "Liquid Account",
+                        amount: IDRFormatting.compact(liquidAssets)
+                    )
 
-                VStack(spacing: 0) {
-                    ForEach(sortedAccounts) { account in
-                        Button {
-                            activeEditor = .editAccount(account.id)
-                        } label: {
-                            WorthlyDisclosureRow(
-                                icon: account.type.systemImage,
-                                title: account.name,
-                                subtitle: account.type.title,
-                                value: IDRFormatting.compact(account.balance),
-                                separatorLeadingInset: 56
-                            )
+                    VStack(spacing: 0) {
+                        ForEach(sortedAccounts) { account in
+                            Button {
+                                activeEditor = .editAccount(account.id)
+                            } label: {
+                                WorthlyDisclosureRow(
+                                    icon: account.type.systemImage,
+                                    title: account.name,
+                                    subtitle: account.type.title,
+                                    value: IDRFormatting.compact(account.balance),
+                                    separatorLeadingInset: 56
+                                )
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
                 }
 
-                AssetSectionHeader(
-                    title: "SBN Investment",
-                    amount: IDRFormatting.compact(investmentPrincipal)
-                )
+                if !sortedSbnInvestments.isEmpty {
+                    AssetSectionHeader(
+                        title: "Investments",
+                        amount: IDRFormatting.compact(investmentPrincipal)
+                    )
 
-                VStack(spacing: 0) {
-                    ForEach(sortedSbnInvestments) { investment in
-                        Button {
-                            activeEditor = .editInvestment(investment.id)
-                        } label: {
-                            WorthlyDisclosureRow(
-                                icon: "percent",
-                                title: investment.name,
-                                subtitle: "\(IDRFormatting.percent(investment.annualInterestRate)) p.a.",
-                                value: IDRFormatting.compact(investment.principal),
-                                separatorLeadingInset: 56
-                            )
+                    VStack(spacing: 0) {
+                        ForEach(sortedSbnInvestments) { investment in
+                            Button {
+                                activeEditor = .editInvestment(investment.id)
+                            } label: {
+                                WorthlyDisclosureRow(
+                                    icon: "percent",
+                                    title: investment.name,
+                                    subtitle: "\(IDRFormatting.percent(investment.annualInterestRate)) p.a.",
+                                    value: IDRFormatting.compact(investment.principal),
+                                    separatorLeadingInset: 56
+                                )
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
                 }
 
-                AssetSectionHeader(
-                    title: "Liabilities",
-                    amount: IDRFormatting.compact(totalDebt)
-                )
-                .padding(.top, 8)
+                if !sortedDebts.isEmpty {
+                    AssetSectionHeader(
+                        title: "Liabilities",
+                        amount: IDRFormatting.compact(totalDebt)
+                    )
+                    .padding(.top, 8)
 
-                VStack(spacing: 0) {
-                    ForEach(sortedDebts) { debt in
-                        Button {
-                            activeEditor = .editDebt(debt.id)
-                        } label: {
-                            WorthlyDisclosureRow(
-                                icon: debt.name.lowercased().contains("kpr") ? "house" : "creditcard",
-                                title: debt.name,
-                                subtitle: "\(debt.durationMonths) months left",
-                                value: IDRFormatting.compact(debt.remainingAmount),
-                                separatorLeadingInset: 56
-                            )
+                    VStack(spacing: 0) {
+                        ForEach(sortedDebts) { debt in
+                            Button {
+                                activeEditor = .editDebt(debt.id)
+                            } label: {
+                                WorthlyDisclosureRow(
+                                    icon: debt.name.lowercased().contains("kpr") ? "house" : "creditcard",
+                                    title: debt.name,
+                                    subtitle: "\(debt.durationMonths) months left",
+                                    value: IDRFormatting.compact(debt.remainingAmount),
+                                    separatorLeadingInset: 56
+                                )
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
                 }
             }
@@ -149,19 +165,21 @@ struct AssetView: View {
                     systemImage: "plus",
                     accessibilityLabel: "Add asset"
                 ) {
-                    activeEditor = .add
+                    activeEditor = .add(.liquidAccount)
                 }
             }
         }
         .sheet(item: $activeEditor) { editor in
             switch editor {
-            case .add:
+            case .add(let initialKind):
                 AddAssetEditorSheet(
+                    initialKind: initialKind,
                     referenceDate: store.referenceDate,
                     onSaveAccount: { store.addAccount($0) },
-                    onSaveInvestment: { store.addInvestment($0) }
+                    onSaveInvestment: { store.addInvestment($0) },
+                    onSaveDebt: { store.addDebt($0) }
                 )
-                .presentationDetents([.height(560), .medium])
+                .presentationDetents([.height(620), .medium])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(28)
                 .presentationBackground(.regularMaterial)
@@ -213,15 +231,15 @@ struct AssetView: View {
 }
 
 private enum AssetEditor: Identifiable {
-    case add
+    case add(AddAssetKind)
     case editAccount(UUID)
     case editInvestment(UUID)
     case editDebt(UUID)
 
     var id: String {
         switch self {
-        case .add:
-            "add"
+        case .add(let kind):
+            "add-\(kind.rawValue)"
         case .editAccount(let accountID):
             "edit-account-\(accountID.uuidString)"
         case .editInvestment(let investmentID):
@@ -232,18 +250,21 @@ private enum AssetEditor: Identifiable {
     }
 }
 
-private enum AddAssetKind: String, CaseIterable, Identifiable {
+enum AddAssetKind: String, CaseIterable, Identifiable {
     case liquidAccount
     case sbnInvestment
+    case liability
 
     var id: Self { self }
 
     var title: String {
         switch self {
         case .liquidAccount:
-            "Liquid"
+            "Account"
         case .sbnInvestment:
-            "SBN"
+            "Investment"
+        case .liability:
+            "Liability"
         }
     }
 }
@@ -253,7 +274,7 @@ private struct TotalAssetCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Total Asset")
+            Text("Total Assets")
                 .font(.subheadline)
 
             WorthlyAmountText(
@@ -268,26 +289,63 @@ private struct TotalAssetCard: View {
     }
 }
 
-private struct AddAssetEditorSheet: View {
+private struct AssetEmptyState: View {
+    let onAddAccount: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Image(systemName: "wallet.pass")
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(.blue)
+
+            Text("Add your first account")
+                .font(.headline)
+
+            Text("Start with one bank, e-wallet, or cash account.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Button(action: onAddAccount) {
+                Label("Add first account", systemImage: "plus")
+                    .font(.subheadline.weight(.semibold))
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(WorthlyCardBackground())
+    }
+}
+
+struct AddAssetEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let onSaveAccount: (Account) -> Void
     let onSaveInvestment: (SBNInvestment) -> Void
+    let onSaveDebt: (Debt) -> Void
 
-    @State private var selectedKind = AddAssetKind.liquidAccount
+    @State private var selectedKind: AddAssetKind
     @State private var accountDraft: AccountDraft
     @State private var investmentDraft: InvestmentDraft
+    @State private var debtDraft: DebtDraft
 
     init(
+        initialKind: AddAssetKind = .liquidAccount,
         referenceDate: Date,
         onSaveAccount: @escaping (Account) -> Void,
-        onSaveInvestment: @escaping (SBNInvestment) -> Void
+        onSaveInvestment: @escaping (SBNInvestment) -> Void,
+        onSaveDebt: @escaping (Debt) -> Void
     ) {
         self.onSaveAccount = onSaveAccount
         self.onSaveInvestment = onSaveInvestment
+        self.onSaveDebt = onSaveDebt
+        _selectedKind = State(initialValue: initialKind)
         _accountDraft = State(initialValue: AccountDraft(referenceDate: referenceDate))
         _investmentDraft = State(initialValue: InvestmentDraft(referenceDate: referenceDate))
+        _debtDraft = State(initialValue: DebtDraft(referenceDate: referenceDate))
     }
 
     private var canSave: Bool {
@@ -296,6 +354,8 @@ private struct AddAssetEditorSheet: View {
             accountDraft.isValid
         case .sbnInvestment:
             investmentDraft.isValid
+        case .liability:
+            debtDraft.isValid
         }
     }
 
@@ -345,6 +405,8 @@ private struct AddAssetEditorSheet: View {
                             AssetAccountForm(draft: $accountDraft)
                         case .sbnInvestment:
                             AssetInvestmentForm(draft: $investmentDraft)
+                        case .liability:
+                            AssetDebtForm(draft: $debtDraft)
                         }
                     }
                     .id(selectedKind)
@@ -368,6 +430,12 @@ private struct AddAssetEditorSheet: View {
             }
 
             onSaveInvestment(investment)
+        case .liability:
+            guard let debt = debtDraft.debt else {
+                return
+            }
+
+            onSaveDebt(debt)
         }
 
         dismiss()
@@ -549,7 +617,7 @@ private struct AssetInvestmentForm: View {
         AssetEditorTextFieldRow(
             icon: "textformat",
             title: "Name",
-            placeholder: "ORI04ST26",
+            placeholder: "Deposit, gold, fund",
             text: $draft.name
         )
 
@@ -901,7 +969,7 @@ private struct AssetCompositionChart: View {
                 Text("Asset Allocation")
                     .font(.headline)
 
-                Text("Liquid accounts + SBN investments")
+                Text("Liquid accounts + investments")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -1275,6 +1343,15 @@ private struct DebtDraft {
     var annualInterestRateText: String
     var durationMonthsText: String
     var startDate: Date
+
+    init(referenceDate: Date) {
+        id = UUID()
+        name = ""
+        remainingAmountText = ""
+        annualInterestRateText = ""
+        durationMonthsText = "12"
+        startDate = referenceDate
+    }
 
     init(debt: Debt) {
         id = debt.id

@@ -12,6 +12,7 @@ import Observation
 final class FinanceStore {
     @ObservationIgnored private let persistence: FinancePersistence
     @ObservationIgnored private var shouldPersist = false
+    @ObservationIgnored private var preservedUserSnapshot: FinanceSnapshot?
 
     var referenceDate: Date {
         didSet { persistIfNeeded() }
@@ -40,14 +41,24 @@ final class FinanceStore {
     var netWorthTarget: Decimal {
         didSet { persistIfNeeded() }
     }
+    var hasAnsweredLiabilitySetup: Bool {
+        didSet { persistIfNeeded() }
+    }
+    var isDummyDataEnabled: Bool {
+        didSet { persistIfNeeded() }
+    }
 
     init(
-        sampleData: SampleFinanceData = .current,
+        sampleData: SampleFinanceData? = nil,
         persistence: FinancePersistence = .shared
     ) {
         self.persistence = persistence
 
-        let snapshot = persistence.load() ?? FinanceSnapshot(sampleData: sampleData)
+        let state = persistence.load()
+            ?? FinancePersistenceState(
+                activeSnapshot: sampleData.map { FinanceSnapshot(sampleData: $0) } ?? FinanceSnapshot.empty()
+            )
+        let snapshot = state.activeSnapshot
         referenceDate = snapshot.referenceDate
         projectionHorizon = snapshot.projectionHorizon
         accounts = snapshot.accounts
@@ -57,6 +68,9 @@ final class FinanceStore {
         recurringIncomes = snapshot.recurringIncomes
         checklistActions = snapshot.checklistActions
         netWorthTarget = snapshot.netWorthTarget
+        hasAnsweredLiabilitySetup = snapshot.hasAnsweredLiabilitySetup
+        preservedUserSnapshot = state.preservedUserSnapshot
+        isDummyDataEnabled = state.isDummyDataEnabled
         shouldPersist = true
     }
 
@@ -78,6 +92,14 @@ final class FinanceStore {
 
     var currentNetWorth: Decimal {
         totalAssets - totalDebt
+    }
+
+    var hasStartedMoneyMap: Bool {
+        !accounts.isEmpty || !sbnInvestments.isEmpty || !debts.isEmpty
+    }
+
+    var isInitialSetupComplete: Bool {
+        !accounts.isEmpty && (!debts.isEmpty || hasAnsweredLiabilitySetup)
     }
 
     var netWorthChangeText: String {
@@ -211,6 +233,51 @@ final class FinanceStore {
         }
 
         debts[index] = debt
+        hasAnsweredLiabilitySetup = true
+    }
+
+    func addDebt(_ debt: Debt) {
+        debts.append(debt)
+        hasAnsweredLiabilitySetup = true
+    }
+
+    func confirmNoLiabilities() {
+        hasAnsweredLiabilitySetup = true
+    }
+
+    func setDummyDataEnabled(_ isEnabled: Bool) {
+        isEnabled ? enableDummyData() : disableDummyData()
+    }
+
+    func enableDummyData() {
+        guard !isDummyDataEnabled else {
+            return
+        }
+
+        let userSnapshot = snapshot
+        let dummySnapshot = FinanceSnapshot(sampleData: .current)
+
+        shouldPersist = false
+        applySnapshot(dummySnapshot)
+        preservedUserSnapshot = userSnapshot
+        isDummyDataEnabled = true
+        shouldPersist = true
+        persistence.save(persistenceState)
+    }
+
+    func disableDummyData() {
+        guard isDummyDataEnabled else {
+            return
+        }
+
+        let restoredSnapshot = preservedUserSnapshot ?? FinanceSnapshot.empty()
+
+        shouldPersist = false
+        applySnapshot(restoredSnapshot)
+        preservedUserSnapshot = nil
+        isDummyDataEnabled = false
+        shouldPersist = true
+        persistence.save(persistenceState)
     }
 
     func saveSalaryAmounts(_ amounts: [Decimal]) {
@@ -249,17 +316,20 @@ final class FinanceStore {
 
     func resetToSampleData(_ sampleData: SampleFinanceData = .current) {
         shouldPersist = false
-        referenceDate = sampleData.referenceDate
-        projectionHorizon = sampleData.projectionHorizon
-        accounts = sampleData.accounts
-        transactions = sampleData.transactions
-        sbnInvestments = sampleData.sbnInvestments
-        debts = sampleData.debts
-        recurringIncomes = sampleData.recurringIncomes
-        checklistActions = sampleData.checklistActions
-        netWorthTarget = sampleData.netWorthTarget
+        applySnapshot(FinanceSnapshot(sampleData: sampleData))
+        preservedUserSnapshot = nil
+        isDummyDataEnabled = false
         shouldPersist = true
-        persistence.save(snapshot)
+        persistence.save(persistenceState)
+    }
+
+    func resetToEmptyData() {
+        shouldPersist = false
+        applySnapshot(FinanceSnapshot.empty())
+        preservedUserSnapshot = nil
+        isDummyDataEnabled = false
+        shouldPersist = true
+        persistence.save(persistenceState)
     }
 
     func isInReferenceMonth(_ date: Date) -> Bool {
@@ -321,7 +391,16 @@ final class FinanceStore {
             debts: debts,
             recurringIncomes: recurringIncomes,
             checklistActions: checklistActions,
-            netWorthTarget: netWorthTarget
+            netWorthTarget: netWorthTarget,
+            hasAnsweredLiabilitySetup: hasAnsweredLiabilitySetup
+        )
+    }
+
+    private var persistenceState: FinancePersistenceState {
+        FinancePersistenceState(
+            activeSnapshot: snapshot,
+            preservedUserSnapshot: preservedUserSnapshot,
+            isDummyDataEnabled: isDummyDataEnabled
         )
     }
 
@@ -330,7 +409,20 @@ final class FinanceStore {
             return
         }
 
-        persistence.save(snapshot)
+        persistence.save(persistenceState)
+    }
+
+    private func applySnapshot(_ snapshot: FinanceSnapshot) {
+        referenceDate = snapshot.referenceDate
+        projectionHorizon = snapshot.projectionHorizon
+        accounts = snapshot.accounts
+        transactions = snapshot.transactions
+        sbnInvestments = snapshot.sbnInvestments
+        debts = snapshot.debts
+        recurringIncomes = snapshot.recurringIncomes
+        checklistActions = snapshot.checklistActions
+        netWorthTarget = snapshot.netWorthTarget
+        hasAnsweredLiabilitySetup = snapshot.hasAnsweredLiabilitySetup
     }
 
     private func monthlyOccurrenceCount(

@@ -63,12 +63,16 @@ struct PlanningView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
-                ProjectionCard(
-                    horizon: store.projectionHorizon,
-                    projectedNetWorth: projectedNetWorth
-                )
+                if store.hasStartedMoneyMap {
+                    ProjectionCard(
+                        horizon: store.projectionHorizon,
+                        projectedNetWorth: projectedNetWorth
+                    )
 
-                GapCard(gap: gapToTarget)
+                    GapCard(gap: gapToTarget)
+                } else {
+                    PlanningEmptyStateCard()
+                }
 
                 Text("Assumptions")
                     .font(.headline)
@@ -89,7 +93,7 @@ struct PlanningView: View {
                         activeEditor = .investments
                     } label: {
                         WorthlyDisclosureRow(
-                            title: "SBN coupons (monthly)",
+                            title: "Investment returns (monthly)",
                             value: IDRFormatting.compact(monthlySbnCoupon)
                         )
                     }
@@ -209,12 +213,29 @@ private struct ProjectionCard: View {
                 minimumScaleFactor: 0.78
             )
 
-            Text("Estimate based on recurring salary, SBN coupon, and debt installment")
+            Text("Estimate based on recurring salary, investment returns, and debt installments")
                 .font(.caption)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(12)
         .frame(maxWidth: .infinity, minHeight: 98, alignment: .leading)
+        .background(WorthlyCardBackground())
+    }
+}
+
+private struct PlanningEmptyStateCard: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Projection unavailable")
+                .font(.subheadline)
+
+            Text("Add an account to start estimating your money map.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, minHeight: 90, alignment: .leading)
         .background(WorthlyCardBackground())
     }
 }

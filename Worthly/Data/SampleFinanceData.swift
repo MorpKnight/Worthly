@@ -124,7 +124,7 @@ struct SampleFinanceData {
 
         let transactions = [
             transaction(.income, 13_500_000, "Salary", bcaID, 15, 9, 5, "Monthly salary"),
-            transaction(.income, 675_000, "SBN coupon", bcaID, 15, 8, 30, "Monthly SBN coupon"),
+            transaction(.income, 675_000, "Investment return", bcaID, 15, 8, 30, "Monthly investment return"),
             transaction(.outcome, 300_000, "Restaurant", bcaID, 15, 12, 40, "Lunch with team"),
             transaction(.outcome, 1_300_000, "Debt installment", mandiriID, 15, 10, 12, "Digimap installment"),
             transaction(.account, 1_000_000, "Gopay top up", bcaID, 15, 7, 48, "Top up from BCA", destinationAccountID: gopayID),
@@ -147,7 +147,7 @@ struct SampleFinanceData {
             transaction(.outcome, 55_000, "Coffee", cashID, 11, 17, 0, "Coffee"),
             transaction(.outcome, 275_000, "Health", bcaID, 11, 15, 45, "Medicine"),
             transaction(.outcome, 1_900_000, "Rent", mandiriID, 11, 9, 5, "Studio rent"),
-            transaction(.income, 675_000, "SBN coupon", bcaID, 10, 8, 35, "Monthly SBN coupon"),
+            transaction(.income, 675_000, "Investment return", bcaID, 10, 8, 35, "Monthly investment return"),
             transaction(.outcome, 380_000, "Restaurant", gopayID, 10, 20, 15, "Dinner"),
             transaction(.outcome, 230_000, "Internet", bcaID, 10, 13, 10, "Home internet"),
             transaction(.income, 1_000_000, "Side project", jagoID, 10, 11, 30, "Prototype milestone"),

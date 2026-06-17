@@ -25,7 +25,7 @@ extension FinanceTransaction {
         switch category.lowercased() {
         case let category where category.contains("salary"):
             "square.and.arrow.down"
-        case let category where category.contains("coupon"):
+        case let category where category.contains("coupon") || category.contains("investment return"):
             "percent"
         case let category where category.contains("debt") || category.contains("installment"):
             "square.and.arrow.up"
