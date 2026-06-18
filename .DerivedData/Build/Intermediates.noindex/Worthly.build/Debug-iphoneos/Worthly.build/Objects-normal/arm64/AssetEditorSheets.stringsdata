@@ -6,8 +6,8 @@
         "comment": "",
         "key": "Asset type",
         "location": {
-          "startingColumn": 24,
-          "startingLine": 81
+          "startingColumn": 28,
+          "startingLine": 91
         }
       },
       {
@@ -15,7 +15,7 @@
         "key": "Please choose another asset.",
         "location": {
           "startingColumn": 18,
-          "startingLine": 254
+          "startingLine": 265
         }
       }
     ]

@@ -7,30 +7,30 @@
         "key": "Projected %@, %@",
         "location": {
           "startingColumn": 29,
-          "startingLine": 33
+          "startingLine": 32
         }
       },
       {
         "comment": "",
         "key": "Projected %@",
         "location": {
-          "startingColumn": 18,
-          "startingLine": 16
+          "startingColumn": 22,
+          "startingLine": 17
         }
       },
       {
         "comment": "",
         "key": "Estimate based on recurring salary, investment returns, and debt installments",
         "location": {
-          "startingColumn": 18,
-          "startingLine": 25
+          "startingColumn": 22,
+          "startingLine": 26
         }
       },
       {
         "comment": "",
         "key": "Projection unavailable",
         "location": {
-          "startingColumn": 18,
+          "startingColumn": 22,
           "startingLine": 40
         }
       },
@@ -38,7 +38,7 @@
         "comment": "",
         "key": "Add an account to start estimating your money map.",
         "location": {
-          "startingColumn": 18,
+          "startingColumn": 22,
           "startingLine": 43
         }
       },
@@ -47,15 +47,15 @@
         "key": "Gap to target, %@",
         "location": {
           "startingColumn": 29,
-          "startingLine": 73
+          "startingLine": 70
         }
       },
       {
         "comment": "",
         "key": "Gap to target",
         "location": {
-          "startingColumn": 18,
-          "startingLine": 59
+          "startingColumn": 22,
+          "startingLine": 58
         }
       },
       {
@@ -63,7 +63,7 @@
         "key": "Projection horizon, %@",
         "location": {
           "startingColumn": 29,
-          "startingLine": 127
+          "startingLine": 124
         }
       },
       {
@@ -71,7 +71,7 @@
         "key": "Expanded",
         "location": {
           "startingColumn": 42,
-          "startingLine": 128
+          "startingLine": 125
         }
       },
       {
@@ -79,7 +79,7 @@
         "key": "Collapsed",
         "location": {
           "startingColumn": 55,
-          "startingLine": 128
+          "startingLine": 125
         }
       },
       {
@@ -87,7 +87,7 @@
         "key": "Projection horizon",
         "location": {
           "startingColumn": 30,
-          "startingLine": 88
+          "startingLine": 85
         }
       },
       {
@@ -95,7 +95,7 @@
         "key": "Projection horizon",
         "location": {
           "startingColumn": 26,
-          "startingLine": 104
+          "startingLine": 101
         }
       },
       {
@@ -103,7 +103,7 @@
         "key": "Projection horizon",
         "location": {
           "startingColumn": 13,
-          "startingLine": 144
+          "startingLine": 141
         }
       },
       {
@@ -111,7 +111,7 @@
         "key": "Projection horizon calendar",
         "location": {
           "startingColumn": 29,
-          "startingLine": 153
+          "startingLine": 150
         }
       }
     ]

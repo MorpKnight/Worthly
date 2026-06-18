@@ -12,23 +12,22 @@ struct ProjectionCard: View {
     let projectedNetWorth: Decimal
 
     var body: some View {
-        VStack(alignment: .leading, spacing: WorthlySpacing.xs) {
-            Text("Projected \(WorthlyDateFormatting.projectionHorizon(horizon))")
-                .font(.subheadline)
+        WorthlySummaryCard(minHeight: 98) {
+            VStack(alignment: .leading, spacing: WorthlySpacing.xs) {
+                Text("Projected \(WorthlyDateFormatting.projectionHorizon(horizon))")
+                    .font(.subheadline)
 
-            WorthlyAmountText(
-                text: IDRFormatting.full(projectedNetWorth),
-                font: .title2.weight(.bold),
-                minimumScaleFactor: 0.78
-            )
+                WorthlyAmountText(
+                    text: IDRFormatting.full(projectedNetWorth),
+                    font: .title2.weight(.bold),
+                    minimumScaleFactor: 0.78
+                )
 
-            Text("Estimate based on recurring salary, investment returns, and debt installments")
-                .font(.caption)
-                .fixedSize(horizontal: false, vertical: true)
+                Text("Estimate based on recurring salary, investment returns, and debt installments")
+                    .font(.caption)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
-        .padding(WorthlySpacing.sm)
-        .frame(maxWidth: .infinity, minHeight: 98, alignment: .leading)
-        .background(WorthlyCardBackground())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Projected \(WorthlyDateFormatting.projectionHorizon(horizon)), \(IDRFormatting.full(projectedNetWorth))")
     }
@@ -36,18 +35,17 @@ struct ProjectionCard: View {
 
 struct PlanningEmptyStateCard: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: WorthlySpacing.xs) {
-            Text("Projection unavailable")
-                .font(.subheadline)
+        WorthlySummaryCard(minHeight: 90) {
+            VStack(alignment: .leading, spacing: WorthlySpacing.xs) {
+                Text("Projection unavailable")
+                    .font(.subheadline)
 
-            Text("Add an account to start estimating your money map.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+                Text("Add an account to start estimating your money map.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
-        .padding(WorthlySpacing.sm)
-        .frame(maxWidth: .infinity, minHeight: 90, alignment: .leading)
-        .background(WorthlyCardBackground())
     }
 }
 
@@ -55,20 +53,19 @@ struct GapCard: View {
     let gap: Decimal
 
     var body: some View {
-        VStack(alignment: .leading, spacing: WorthlySpacing.xs) {
-            Text("Gap to target")
-                .font(.subheadline)
+        WorthlySummaryCard(minHeight: 70) {
+            VStack(alignment: .leading, spacing: WorthlySpacing.xs) {
+                Text("Gap to target")
+                    .font(.subheadline)
 
-            WorthlyAmountText(
-                text: IDRFormatting.signedCompact(gap),
-                font: .title2.weight(.bold),
-                color: gap < 0 ? WorthlyAccessibleColor.negative : WorthlyAccessibleColor.positive,
-                minimumScaleFactor: 0.78
-            )
+                WorthlyAmountText(
+                    text: IDRFormatting.signedCompact(gap),
+                    font: .title2.weight(.bold),
+                    color: gap < 0 ? WorthlyAccessibleColor.negative : WorthlyAccessibleColor.positive,
+                    minimumScaleFactor: 0.78
+                )
+            }
         }
-        .padding(WorthlySpacing.sm)
-        .frame(maxWidth: .infinity, minHeight: 70, alignment: .leading)
-        .background(WorthlyCardBackground())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Gap to target, \(IDRFormatting.signedCompact(gap))")
     }

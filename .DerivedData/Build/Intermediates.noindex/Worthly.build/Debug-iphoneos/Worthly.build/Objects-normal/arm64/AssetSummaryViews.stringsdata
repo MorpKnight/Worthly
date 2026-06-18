@@ -7,39 +7,15 @@
         "key": "Total assets %@",
         "location": {
           "startingColumn": 29,
-          "startingLine": 28
+          "startingLine": 27
         }
       },
       {
         "comment": "",
         "key": "Total Assets",
         "location": {
-          "startingColumn": 18,
-          "startingLine": 15
-        }
-      },
-      {
-        "comment": "",
-        "key": "Add your first account",
-        "location": {
-          "startingColumn": 18,
-          "startingLine": 41
-        }
-      },
-      {
-        "comment": "",
-        "key": "Start with one bank, e-wallet, or cash account.",
-        "location": {
-          "startingColumn": 18,
-          "startingLine": 44
-        }
-      },
-      {
-        "comment": "",
-        "key": "Add first account",
-        "location": {
-          "startingColumn": 23,
-          "startingLine": 50
+          "startingColumn": 22,
+          "startingLine": 16
         }
       }
     ]

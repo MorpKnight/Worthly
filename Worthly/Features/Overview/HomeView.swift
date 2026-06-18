@@ -10,7 +10,7 @@ import SwiftUI
 struct HomeView: View {
     let store: FinanceStore
 
-    @State private var activeSetupAssetKind: AddAssetKind?
+    @State private var activeAddRoute: OverviewAddRoute?
 
     init(store: FinanceStore = FinanceStore()) {
         self.store = store
@@ -43,10 +43,10 @@ struct HomeView: View {
                         hasAccount: !store.accounts.isEmpty,
                         hasLiabilityAnswer: !store.debts.isEmpty || store.hasAnsweredLiabilitySetup,
                         hasInvestment: !store.sbnInvestments.isEmpty,
-                        onAddAccount: { activeSetupAssetKind = .liquidAccount },
-                        onAddLiability: { activeSetupAssetKind = .liability },
+                        onAddAccount: { activeAddRoute = .account },
+                        onAddLiability: { activeAddRoute = .liability },
                         onConfirmNoLiabilities: { store.confirmNoLiabilities() },
-                        onAddInvestment: { activeSetupAssetKind = .sbnInvestment }
+                        onAddInvestment: { activeAddRoute = .investment }
                     )
                 }
 
@@ -94,21 +94,83 @@ struct HomeView: View {
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                WorthlyToolbarIconButton(
-                    systemImage: "plus",
-                    accessibilityLabel: "Add item"
-                ) {
-                    activeSetupAssetKind = .liquidAccount
+                Menu {
+                    Button {
+                        activeAddRoute = .account
+                    } label: {
+                        Label("Account", systemImage: "wallet.pass")
+                    }
+
+                    Button {
+                        activeAddRoute = .transaction
+                    } label: {
+                        Label("Transaction", systemImage: "list.bullet.rectangle")
+                    }
+
+                    Button {
+                        activeAddRoute = .liability
+                    } label: {
+                        Label("Liability", systemImage: "creditcard")
+                    }
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.title3.weight(.medium))
+                        .frame(width: 44, height: 44)
+                        .background {
+                            Circle()
+                                .fill(.ultraThinMaterial)
+                        }
                 }
+                .buttonStyle(.plain)
+                .foregroundStyle(.primary)
+                .accessibilityLabel("Add")
             }
         }
-        .fullScreenCover(item: $activeSetupAssetKind) { kind in
+        .fullScreenCover(item: $activeAddRoute) { route in
+            editorView(for: route)
+        }
+    }
+
+    @ViewBuilder
+    private func editorView(for route: OverviewAddRoute) -> some View {
+        switch route {
+        case .account:
             AddAssetEditorSheet(
-                initialKind: kind,
+                title: "Add Account",
+                initialKind: .liquidAccount,
+                allowedKinds: [.liquidAccount],
                 referenceDate: store.referenceDate,
                 onSaveAccount: { store.addAccount($0) },
-                onSaveInvestment: { store.addInvestment($0) },
+                onSaveInvestment: { _ in },
+                onSaveDebt: { _ in }
+            )
+        case .transaction:
+            HistoryTransactionEditorSheet(
+                mode: .add,
+                transaction: nil,
+                accounts: store.accounts,
+                referenceDate: store.referenceDate,
+                onSave: { store.addTransaction($0) }
+            )
+        case .liability:
+            AddAssetEditorSheet(
+                title: "Add Liability",
+                initialKind: .liability,
+                allowedKinds: [.liability],
+                referenceDate: store.referenceDate,
+                onSaveAccount: { _ in },
+                onSaveInvestment: { _ in },
                 onSaveDebt: { store.addDebt($0) }
+            )
+        case .investment:
+            AddAssetEditorSheet(
+                title: "Add Investment",
+                initialKind: .sbnInvestment,
+                allowedKinds: [.sbnInvestment],
+                referenceDate: store.referenceDate,
+                onSaveAccount: { _ in },
+                onSaveInvestment: { store.addInvestment($0) },
+                onSaveDebt: { _ in }
             )
         }
     }
@@ -131,39 +193,47 @@ struct HomeView: View {
     }
 }
 
+private enum OverviewAddRoute: String, Identifiable {
+    case account
+    case transaction
+    case liability
+    case investment
+
+    var id: String { rawValue }
+}
+
 private struct NetWorthCard: View {
     let netWorth: Decimal
     let changeText: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: WorthlySpacing.xs) {
-            Text("Current Net Worth")
-                .font(.subheadline)
+        WorthlySummaryCard {
+            VStack(alignment: .leading, spacing: WorthlySpacing.xs) {
+                Text("Current Net Worth")
+                    .font(.subheadline)
 
-            WorthlyAmountText(
-                text: IDRFormatting.full(netWorth),
-                font: .title2.weight(.bold),
-                minimumScaleFactor: 0.78
-            )
+                WorthlyAmountText(
+                    text: IDRFormatting.full(netWorth),
+                    font: .title2.weight(.bold),
+                    minimumScaleFactor: 0.78
+                )
 
-            ViewThatFits(in: .horizontal) {
-                HStack(alignment: .firstTextBaseline) {
-                    formulaText
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .firstTextBaseline) {
+                        formulaText
 
-                    Spacer()
+                        Spacer()
 
-                    WorthlyAmountText(text: changeText, font: .caption)
-                }
+                        WorthlyAmountText(text: changeText, font: .caption)
+                    }
 
-                VStack(alignment: .leading, spacing: WorthlySpacing.xxs) {
-                    formulaText
-                    WorthlyAmountText(text: changeText, font: .caption)
+                    VStack(alignment: .leading, spacing: WorthlySpacing.xxs) {
+                        formulaText
+                        WorthlyAmountText(text: changeText, font: .caption)
+                    }
                 }
             }
         }
-        .padding(WorthlySpacing.sm)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(WorthlyCardBackground())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Current net worth \(IDRFormatting.full(netWorth)), change \(changeText)")
     }
@@ -185,56 +255,55 @@ private struct GuidedSetupCard: View {
     let onAddInvestment: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: WorthlySpacing.md) {
-            VStack(alignment: .leading, spacing: WorthlySpacing.xxs) {
-                Text("Build your money map")
-                    .font(.headline)
+        WorthlySummaryCard(padding: WorthlySpacing.md) {
+            VStack(alignment: .leading, spacing: WorthlySpacing.md) {
+                VStack(alignment: .leading, spacing: WorthlySpacing.xxs) {
+                    Text("Build your money map")
+                        .font(.headline)
 
-                Text("Start with where your money is stored, then mark whether you have liabilities.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            VStack(spacing: WorthlySpacing.xs) {
-                if !hasAccount {
-                    GuidedSetupButton(
-                        title: "Add first account",
-                        systemImage: "wallet.pass",
-                        isPrimary: true,
-                        action: onAddAccount
-                    )
+                    Text("Start with where your money is stored, then mark whether you have liabilities.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
-                if hasAccount && !hasLiabilityAnswer {
-                    GuidedSetupButton(
-                        title: "Add liabilities",
-                        systemImage: "creditcard",
-                        isPrimary: true,
-                        action: onAddLiability
-                    )
+                VStack(spacing: WorthlySpacing.xs) {
+                    if !hasAccount {
+                        GuidedSetupButton(
+                            title: "Add first account",
+                            systemImage: "wallet.pass",
+                            isPrimary: true,
+                            action: onAddAccount
+                        )
+                    }
 
-                    GuidedSetupButton(
-                        title: "I have no liabilities",
-                        systemImage: "checkmark.circle",
-                        isPrimary: false,
-                        action: onConfirmNoLiabilities
-                    )
-                }
+                    if hasAccount && !hasLiabilityAnswer {
+                        GuidedSetupButton(
+                            title: "Add liabilities",
+                            systemImage: "creditcard",
+                            isPrimary: true,
+                            action: onAddLiability
+                        )
 
-                if hasAccount && !hasInvestment {
-                    GuidedSetupButton(
-                        title: "Add investment",
-                        systemImage: "percent",
-                        isPrimary: false,
-                        action: onAddInvestment
-                    )
+                        GuidedSetupButton(
+                            title: "I have no liabilities",
+                            systemImage: "checkmark.circle",
+                            isPrimary: false,
+                            action: onConfirmNoLiabilities
+                        )
+                    }
+
+                    if hasAccount && !hasInvestment {
+                        GuidedSetupButton(
+                            title: "Add investment",
+                            systemImage: "percent",
+                            isPrimary: false,
+                            action: onAddInvestment
+                        )
+                    }
                 }
             }
         }
-        .padding(WorthlySpacing.md)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(WorthlyCardBackground())
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Build your money map")
         .accessibilityValue(setupProgress)
@@ -292,20 +361,19 @@ private struct MetricCard: View {
     let valueColor: Color
 
     var body: some View {
-        VStack(alignment: .leading, spacing: WorthlySpacing.lg) {
-            Text(title)
-                .font(.subheadline)
+        WorthlySummaryCard(minHeight: 98) {
+            VStack(alignment: .leading, spacing: WorthlySpacing.lg) {
+                Text(title)
+                    .font(.subheadline)
 
-            WorthlyAmountText(
-                text: value,
-                font: .title2.weight(.bold),
-                color: valueColor,
-                minimumScaleFactor: 0.8
-            )
+                WorthlyAmountText(
+                    text: value,
+                    font: .title2.weight(.bold),
+                    color: valueColor,
+                    minimumScaleFactor: 0.8
+                )
+            }
         }
-        .padding(WorthlySpacing.sm)
-        .frame(maxWidth: .infinity, minHeight: 98, alignment: .leading)
-        .background(WorthlyCardBackground())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(title), \(value)")
     }

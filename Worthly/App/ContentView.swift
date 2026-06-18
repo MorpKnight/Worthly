@@ -12,18 +12,24 @@ struct ContentView: View {
     @State private var selectedTab: AppTab = .overview
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            ForEach(AppTab.allCases) { tab in
-                NavigationStack {
-                    content(for: tab)
+        Group {
+            if store.hasCompletedOnboarding {
+                TabView(selection: $selectedTab) {
+                    ForEach(AppTab.allCases) { tab in
+                        NavigationStack {
+                            content(for: tab)
+                        }
+                        .tabItem {
+                            tab.label
+                        }
+                        .tag(tab)
+                    }
                 }
-                .tabItem {
-                    tab.label
-                }
-                .tag(tab)
+                .tint(WorthlyAccessibleColor.accent)
+            } else {
+                OnboardingView(store: store)
             }
         }
-        .tint(WorthlyAccessibleColor.accent)
     }
 
     @ViewBuilder

@@ -28,18 +28,50 @@
       },
       {
         "comment": "",
+        "key": "Add",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 126
+        }
+      },
+      {
+        "comment": "",
+        "key": "Account",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 101
+        }
+      },
+      {
+        "comment": "",
+        "key": "Transaction",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 107
+        }
+      },
+      {
+        "comment": "",
+        "key": "Liability",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 113
+        }
+      },
+      {
+        "comment": "",
         "key": "Current net worth %@, change %@",
         "location": {
           "startingColumn": 29,
-          "startingLine": 168
+          "startingLine": 238
         }
       },
       {
         "comment": "",
         "key": "Current Net Worth",
         "location": {
-          "startingColumn": 18,
-          "startingLine": 140
+          "startingColumn": 22,
+          "startingLine": 212
         }
       },
       {
@@ -47,7 +79,7 @@
         "key": "Liquid Assets + Investments - Liabilities",
         "location": {
           "startingColumn": 14,
-          "startingLine": 172
+          "startingLine": 242
         }
       },
       {
@@ -55,23 +87,23 @@
         "key": "Build your money map",
         "location": {
           "startingColumn": 29,
-          "startingLine": 239
+          "startingLine": 308
         }
       },
       {
         "comment": "",
         "key": "Build your money map",
         "location": {
-          "startingColumn": 22,
-          "startingLine": 190
+          "startingColumn": 26,
+          "startingLine": 261
         }
       },
       {
         "comment": "",
         "key": "Start with where your money is stored, then mark whether you have liabilities.",
         "location": {
-          "startingColumn": 22,
-          "startingLine": 193
+          "startingColumn": 26,
+          "startingLine": 264
         }
       },
       {
@@ -79,7 +111,7 @@
         "key": "%@, %@",
         "location": {
           "startingColumn": 29,
-          "startingLine": 310
+          "startingLine": 378
         }
       },
       {
@@ -87,7 +119,7 @@
         "key": "%@, completed",
         "location": {
           "startingColumn": 43,
-          "startingLine": 329
+          "startingLine": 397
         }
       },
       {
@@ -95,7 +127,7 @@
         "key": "%@, not completed",
         "location": {
           "startingColumn": 67,
-          "startingLine": 329
+          "startingLine": 397
         }
       }
     ]

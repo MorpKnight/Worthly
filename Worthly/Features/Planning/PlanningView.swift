@@ -136,16 +136,6 @@ struct PlanningView: View {
         .background(Color(.systemBackground))
         .navigationTitle("Planning")
         .navigationBarTitleDisplayMode(.large)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                WorthlyToolbarIconButton(
-                    systemImage: "plus",
-                    accessibilityLabel: "Add planning item"
-                ) {
-                    // Static first pass; planning edit flow comes later.
-                }
-            }
-        }
         .fullScreenCover(item: $activeEditor) { editor in
             switch editor {
             case .salary:

@@ -1,0 +1,48 @@
+{
+  "source": "/Users/giovan/Programming/ios/Worthly/Worthly/Features/Onboarding/OnboardingView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "You can edit every account, liability, investment, and transaction later.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 33
+        }
+      },
+      {
+        "comment": "",
+        "key": "Worthly",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 58
+        }
+      },
+      {
+        "comment": "",
+        "key": "Build your first money map",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 61
+        }
+      },
+      {
+        "comment": "",
+        "key": "Add the minimum information Worthly needs to make your Overview useful.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 64
+        }
+      },
+      {
+        "comment": "",
+        "key": "Onboarding progress",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 259
+        }
+      }
+    ]
+  },
+  "version": 1
+}

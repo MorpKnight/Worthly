@@ -9,22 +9,11 @@ import SwiftUI
 
 struct HistoryEmptyState: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: WorthlySpacing.sm) {
-            Image(systemName: "list.bullet.rectangle")
-                .font(.title2.weight(.semibold))
-                .foregroundStyle(WorthlyAccessibleColor.accent)
-
-            Text("No transactions yet")
-                .font(.headline)
-
-            Text("Income, expenses, and account transfers will appear here.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(WorthlySpacing.md)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(WorthlyCardBackground())
+        WorthlyEmptyStateCard(
+            systemImage: "list.bullet.rectangle",
+            title: "No transactions yet",
+            message: "Income, expenses, and account transfers will appear here."
+        )
     }
 }
 
@@ -72,23 +61,22 @@ struct JuneSummaryCard: View {
     let count: Int
 
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(alignment: .bottom) {
-                amountBlock
+        WorthlySummaryCard(minHeight: 98) {
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .bottom) {
+                    amountBlock
 
-                Spacer()
+                    Spacer()
 
-                countBlock
-            }
+                    countBlock
+                }
 
-            VStack(alignment: .leading, spacing: WorthlySpacing.sm) {
-                amountBlock
-                countBlock
+                VStack(alignment: .leading, spacing: WorthlySpacing.sm) {
+                    amountBlock
+                    countBlock
+                }
             }
         }
-        .padding(WorthlySpacing.sm)
-        .frame(maxWidth: .infinity, minHeight: 98, alignment: .leading)
-        .background(WorthlyCardBackground())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("June summary, \(IDRFormatting.signedCompact(total)), \(count) transactions")
     }
@@ -126,8 +114,7 @@ struct HistorySection<Content: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: WorthlySpacing.xs) {
-            Text(title)
-                .font(.headline)
+            WorthlySectionHeader(title: title)
 
             VStack(spacing: 0) {
                 content

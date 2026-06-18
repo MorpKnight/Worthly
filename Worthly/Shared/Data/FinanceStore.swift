@@ -44,6 +44,9 @@ final class FinanceStore {
     var hasAnsweredLiabilitySetup: Bool {
         didSet { persistIfNeeded() }
     }
+    var hasCompletedOnboarding: Bool {
+        didSet { persistIfNeeded() }
+    }
     var isDummyDataEnabled: Bool {
         didSet { persistIfNeeded() }
     }
@@ -69,6 +72,7 @@ final class FinanceStore {
         checklistActions = snapshot.checklistActions
         netWorthTarget = snapshot.netWorthTarget
         hasAnsweredLiabilitySetup = snapshot.hasAnsweredLiabilitySetup
+        hasCompletedOnboarding = snapshot.hasCompletedOnboarding
         preservedUserSnapshot = state.preservedUserSnapshot
         isDummyDataEnabled = state.isDummyDataEnabled
         shouldPersist = true
@@ -99,6 +103,10 @@ final class FinanceStore {
     }
 
     var isInitialSetupComplete: Bool {
+        !accounts.isEmpty && (!debts.isEmpty || hasAnsweredLiabilitySetup)
+    }
+
+    var canCompleteOnboarding: Bool {
         !accounts.isEmpty && (!debts.isEmpty || hasAnsweredLiabilitySetup)
     }
 
@@ -243,6 +251,14 @@ final class FinanceStore {
 
     func confirmNoLiabilities() {
         hasAnsweredLiabilitySetup = true
+    }
+
+    func completeOnboarding() {
+        guard canCompleteOnboarding else {
+            return
+        }
+
+        hasCompletedOnboarding = true
     }
 
     func setDummyDataEnabled(_ isEnabled: Bool) {
@@ -392,7 +408,8 @@ final class FinanceStore {
             recurringIncomes: recurringIncomes,
             checklistActions: checklistActions,
             netWorthTarget: netWorthTarget,
-            hasAnsweredLiabilitySetup: hasAnsweredLiabilitySetup
+            hasAnsweredLiabilitySetup: hasAnsweredLiabilitySetup,
+            hasCompletedOnboarding: hasCompletedOnboarding
         )
     }
 
@@ -423,6 +440,7 @@ final class FinanceStore {
         checklistActions = snapshot.checklistActions
         netWorthTarget = snapshot.netWorthTarget
         hasAnsweredLiabilitySetup = snapshot.hasAnsweredLiabilitySetup
+        hasCompletedOnboarding = snapshot.hasCompletedOnboarding
     }
 
     private func monthlyOccurrenceCount(

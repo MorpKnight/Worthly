@@ -11,6 +11,8 @@ struct AddAssetEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    let title: String
+    let allowedKinds: [AddAssetKind]
     let onSaveAccount: (Account) -> Void
     let onSaveInvestment: (SBNInvestment) -> Void
     let onSaveDebt: (Debt) -> Void
@@ -21,16 +23,23 @@ struct AddAssetEditorSheet: View {
     @State private var debtDraft: DebtDraft
 
     init(
+        title: String = "Add Asset",
         initialKind: AddAssetKind = .liquidAccount,
+        allowedKinds: [AddAssetKind] = AddAssetKind.allCases,
         referenceDate: Date,
         onSaveAccount: @escaping (Account) -> Void,
         onSaveInvestment: @escaping (SBNInvestment) -> Void,
         onSaveDebt: @escaping (Debt) -> Void
     ) {
+        let normalizedAllowedKinds = allowedKinds.isEmpty ? AddAssetKind.allCases : allowedKinds
+        let selectedKind = normalizedAllowedKinds.contains(initialKind) ? initialKind : normalizedAllowedKinds[0]
+
+        self.title = title
+        self.allowedKinds = normalizedAllowedKinds
         self.onSaveAccount = onSaveAccount
         self.onSaveInvestment = onSaveInvestment
         self.onSaveDebt = onSaveDebt
-        _selectedKind = State(initialValue: initialKind)
+        _selectedKind = State(initialValue: selectedKind)
         _accountDraft = State(initialValue: AccountDraft(referenceDate: referenceDate))
         _investmentDraft = State(initialValue: InvestmentDraft(referenceDate: referenceDate))
         _debtDraft = State(initialValue: DebtDraft(referenceDate: referenceDate))
@@ -72,19 +81,21 @@ struct AddAssetEditorSheet: View {
 
     var body: some View {
         AssetEditorSheetContainer(
-            title: "Add Asset",
+            title: title,
             saveIsEnabled: canSave,
             onCancel: { dismiss() },
             onSave: save
         ) {
             VStack(spacing: WorthlySpacing.sm) {
-                Picker("Asset type", selection: selectedKindBinding) {
-                    ForEach(AddAssetKind.allCases) { kind in
-                        Text(kind.title)
-                            .tag(kind)
+                if allowedKinds.count > 1 {
+                    Picker("Asset type", selection: selectedKindBinding) {
+                        ForEach(allowedKinds) { kind in
+                            Text(kind.title)
+                                .tag(kind)
+                        }
                     }
+                    .pickerStyle(.segmented)
                 }
-                .pickerStyle(.segmented)
 
                 AssetEditorFormGroup {
                     Group {

@@ -18,6 +18,7 @@ struct FinanceSnapshot: Codable {
     var checklistActions: [ChecklistAction]
     var netWorthTarget: Decimal
     var hasAnsweredLiabilitySetup: Bool
+    var hasCompletedOnboarding: Bool
 
     enum CodingKeys: String, CodingKey {
         case referenceDate
@@ -30,6 +31,7 @@ struct FinanceSnapshot: Codable {
         case checklistActions
         case netWorthTarget
         case hasAnsweredLiabilitySetup
+        case hasCompletedOnboarding
     }
 
     init(sampleData: SampleFinanceData) {
@@ -43,6 +45,7 @@ struct FinanceSnapshot: Codable {
         checklistActions = sampleData.checklistActions
         netWorthTarget = sampleData.netWorthTarget
         hasAnsweredLiabilitySetup = !sampleData.debts.isEmpty
+        hasCompletedOnboarding = true
     }
 
     init(
@@ -55,7 +58,8 @@ struct FinanceSnapshot: Codable {
         recurringIncomes: [RecurringIncome],
         checklistActions: [ChecklistAction],
         netWorthTarget: Decimal,
-        hasAnsweredLiabilitySetup: Bool
+        hasAnsweredLiabilitySetup: Bool,
+        hasCompletedOnboarding: Bool
     ) {
         self.referenceDate = referenceDate
         self.projectionHorizon = projectionHorizon
@@ -67,6 +71,7 @@ struct FinanceSnapshot: Codable {
         self.checklistActions = checklistActions
         self.netWorthTarget = netWorthTarget
         self.hasAnsweredLiabilitySetup = hasAnsweredLiabilitySetup
+        self.hasCompletedOnboarding = hasCompletedOnboarding
     }
 
     init(from decoder: Decoder) throws {
@@ -85,6 +90,10 @@ struct FinanceSnapshot: Codable {
             Bool.self,
             forKey: .hasAnsweredLiabilitySetup
         ) ?? !debts.isEmpty
+        hasCompletedOnboarding = try container.decodeIfPresent(
+            Bool.self,
+            forKey: .hasCompletedOnboarding
+        ) ?? (!accounts.isEmpty && hasAnsweredLiabilitySetup)
     }
 
     static func empty(referenceDate: Date = Date()) -> FinanceSnapshot {
@@ -110,7 +119,8 @@ struct FinanceSnapshot: Codable {
             recurringIncomes: [],
             checklistActions: [],
             netWorthTarget: 0,
-            hasAnsweredLiabilitySetup: false
+            hasAnsweredLiabilitySetup: false,
+            hasCompletedOnboarding: false
         )
     }
 }
