@@ -1,0 +1,56 @@
+{
+  "source": "/Users/giovan/Programming/ios/Worthly/Worthly/Features/Planning/PlanningEditorSheets.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Amount",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 46
+        }
+      },
+      {
+        "comment": "",
+        "key": "Add another monthly salary amount",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 72
+        }
+      },
+      {
+        "comment": "",
+        "key": "Add more",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 63
+        }
+      },
+      {
+        "comment": "",
+        "key": "Which one to edit",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 95
+        }
+      },
+      {
+        "comment": "",
+        "key": "Which one to edit",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 233
+        }
+      },
+      {
+        "comment": "",
+        "key": "Please choose another item.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 435
+        }
+      }
+    ]
+  },
+  "version": 1
+}

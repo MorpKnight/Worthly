@@ -146,29 +146,17 @@ struct PlanningView: View {
                 }
             }
         }
-        .sheet(item: $activeEditor) { editor in
+        .fullScreenCover(item: $activeEditor) { editor in
             switch editor {
             case .salary:
                 MonthlySalaryEditorSheet(
                     incomes: store.recurringIncomes,
                     onSave: { store.saveSalaryAmounts($0) }
                 )
-                .presentationDetents([.height(390), .medium])
-                .presentationDragIndicator(.visible)
-                .presentationCornerRadius(28)
-                .presentationBackground(.regularMaterial)
             case .investments:
                 InvestmentEditorSheet(investments: investments)
-                    .presentationDetents([.height(420), .medium])
-                    .presentationDragIndicator(.visible)
-                    .presentationCornerRadius(28)
-                    .presentationBackground(.regularMaterial)
             case .debts:
                 DebtEditorSheet(debts: debts)
-                    .presentationDetents([.height(500), .medium])
-                    .presentationDragIndicator(.visible)
-                    .presentationCornerRadius(28)
-                    .presentationBackground(.regularMaterial)
             }
         }
     }

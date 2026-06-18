@@ -1,0 +1,30 @@
+{
+  "/Users/giovan/Programming/ios/Worthly/Worthly/Features/Settings/SettingView.swift" : {
+    "const-values" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/SettingView.swiftconstvalues",
+    "dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/SettingView.d",
+    "diagnostics" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/SettingView.dia",
+    "object" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/SettingView.o",
+    "swift-dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/SettingView.swiftdeps"
+  },
+  "/Users/giovan/Programming/ios/Worthly/Worthly/Shared/Components/WorthlyAccessibility.swift" : {
+    "const-values" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/WorthlyAccessibility.swiftconstvalues",
+    "dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/WorthlyAccessibility.d",
+    "diagnostics" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/WorthlyAccessibility.dia",
+    "object" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/WorthlyAccessibility.o",
+    "swift-dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/WorthlyAccessibility.swiftdeps"
+  },
+  "/Users/giovan/Programming/ios/Worthly/Worthly/Shared/Components/WorthlyAmountText.swift" : {
+    "const-values" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/WorthlyAmountText.swiftconstvalues",
+    "dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/WorthlyAmountText.d",
+    "diagnostics" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/WorthlyAmountText.dia",
+    "object" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/WorthlyAmountText.o",
+    "swift-dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/WorthlyAmountText.swiftdeps"
+  },
+  "/Users/giovan/Programming/ios/Worthly/Worthly/Shared/Components/WorthlyCardBackground.swift" : {
+    "const-values" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/WorthlyCardBackground.swiftconstvalues",
+    "dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/WorthlyCardBackground.d",
+    "diagnostics" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/WorthlyCardBackground.dia",
+    "object" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/WorthlyCardBackground.o",
+    "swift-dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/WorthlyCardBackground.swiftdeps"
+  }
+}

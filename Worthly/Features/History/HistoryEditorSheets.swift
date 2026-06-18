@@ -270,8 +270,6 @@ struct HistoryMissingTransactionSheet: View {
 }
 
 private struct HistorySheetContainer<Content: View>: View {
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-
     let title: String
     let saveIsEnabled: Bool
     let onCancel: () -> Void
@@ -293,90 +291,15 @@ private struct HistorySheetContainer<Content: View>: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ZStack {
-                HStack {
-                    HistoryCircleButton(
-                        systemImage: "xmark",
-                        accessibilityLabel: "Cancel",
-                        style: .secondary,
-                        action: onCancel
-                    )
-
-                    Spacer()
-
-                    HistoryCircleButton(
-                        systemImage: "checkmark",
-                        accessibilityLabel: "Save transaction",
-                        style: saveIsEnabled ? .primary : .disabled,
-                        action: onSave
-                    )
-                    .disabled(!saveIsEnabled)
-                }
-
-                Text(title)
-                    .font(.headline)
-                    .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? 2 : 1)
-                    .minimumScaleFactor(dynamicTypeSize.isWorthlyAccessibilitySize ? 1 : 0.82)
-                    .padding(.horizontal, WorthlySpacing.sheetTitleHorizontal)
-            }
-            .padding(.top, WorthlySpacing.md)
-            .padding(.horizontal, WorthlySpacing.xs)
-
-            ScrollView {
-                content
-                    .padding(.top, WorthlySpacing.sheetContentTop)
-                    .padding(.horizontal, WorthlySpacing.xs)
-                    .padding(.bottom, WorthlySpacing.sheetContentBottom)
-            }
-            .scrollIndicators(.hidden)
+        WorthlyFullScreenEditorContainer(
+            title: title,
+            leadingAccessibilityLabel: "Cancel",
+            saveAccessibilityLabel: "Save transaction",
+            saveIsEnabled: saveIsEnabled,
+            onLeading: onCancel,
+            onSave: onSave
+        ) {
+            content
         }
-        .padding(.horizontal, WorthlySpacing.sheetHorizontal)
-    }
-}
-
-private struct HistoryCircleButton: View {
-    enum Style {
-        case primary
-        case secondary
-        case disabled
-    }
-
-    let systemImage: String
-    let accessibilityLabel: String
-    let style: Style
-    let action: () -> Void
-
-    private var background: Color {
-        switch style {
-        case .primary:
-            WorthlyAccessibleColor.accent
-        case .secondary, .disabled:
-            Color(.systemGray5)
-        }
-    }
-
-    private var foreground: Color {
-        switch style {
-        case .primary:
-            .white
-        case .secondary:
-            .primary
-        case .disabled:
-            .secondary
-        }
-    }
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.system(size: 20, weight: .medium))
-                .foregroundStyle(foreground)
-                .frame(width: 44, height: 44)
-                .background(background, in: Circle())
-        }
-        .opacity(style == .disabled ? 0.7 : 1)
-        .buttonStyle(.plain)
-        .accessibilityLabel(accessibilityLabel)
     }
 }

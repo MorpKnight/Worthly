@@ -155,7 +155,7 @@ struct AssetView: View {
                 }
             }
         }
-        .sheet(item: $activeEditor) { editor in
+        .fullScreenCover(item: $activeEditor) { editor in
             switch editor {
             case .add(let initialKind):
                 AddAssetEditorSheet(
@@ -165,51 +165,23 @@ struct AssetView: View {
                     onSaveInvestment: { store.addInvestment($0) },
                     onSaveDebt: { store.addDebt($0) }
                 )
-                .presentationDetents([.height(620), .medium])
-                .presentationDragIndicator(.visible)
-                .presentationCornerRadius(28)
-                .presentationBackground(.regularMaterial)
             case .editAccount(let accountID):
                 if let account = store.accounts.first(where: { $0.id == accountID }) {
                     AssetAccountEditorSheet(account: account) { store.updateAccount($0) }
-                        .presentationDetents([.height(460), .medium])
-                        .presentationDragIndicator(.visible)
-                        .presentationCornerRadius(28)
-                        .presentationBackground(.regularMaterial)
                 } else {
                     AssetMissingEditorSheet(title: "Account not found")
-                        .presentationDetents([.height(240)])
-                        .presentationDragIndicator(.visible)
-                        .presentationCornerRadius(28)
-                        .presentationBackground(.regularMaterial)
                 }
             case .editInvestment(let investmentID):
                 if let investment = store.sbnInvestments.first(where: { $0.id == investmentID }) {
                     AssetInvestmentEditorSheet(investment: investment) { store.updateInvestment($0) }
-                        .presentationDetents([.height(540), .medium])
-                        .presentationDragIndicator(.visible)
-                        .presentationCornerRadius(28)
-                        .presentationBackground(.regularMaterial)
                 } else {
                     AssetMissingEditorSheet(title: "Investment not found")
-                        .presentationDetents([.height(240)])
-                        .presentationDragIndicator(.visible)
-                        .presentationCornerRadius(28)
-                        .presentationBackground(.regularMaterial)
                 }
             case .editDebt(let debtID):
                 if let debt = store.debts.first(where: { $0.id == debtID }) {
                     AssetDebtEditorSheet(debt: debt) { store.updateDebt($0) }
-                        .presentationDetents([.height(580), .medium])
-                        .presentationDragIndicator(.visible)
-                        .presentationCornerRadius(28)
-                        .presentationBackground(.regularMaterial)
                 } else {
                     AssetMissingEditorSheet(title: "Liability not found")
-                        .presentationDetents([.height(240)])
-                        .presentationDragIndicator(.visible)
-                        .presentationCornerRadius(28)
-                        .presentationBackground(.regularMaterial)
                 }
             }
         }

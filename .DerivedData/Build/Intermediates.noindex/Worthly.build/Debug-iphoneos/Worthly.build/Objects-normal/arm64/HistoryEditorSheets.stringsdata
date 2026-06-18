@@ -1,0 +1,40 @@
+{
+  "source": "/Users/giovan/Programming/ios/Worthly/Worthly/Features/History/HistoryEditorSheets.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Transaction type",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 140
+        }
+      },
+      {
+        "comment": "",
+        "key": "Amount",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 120
+        }
+      },
+      {
+        "comment": "",
+        "key": "Rp 0",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 124
+        }
+      },
+      {
+        "comment": "",
+        "key": "Please choose another history record.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 265
+        }
+      }
+    ]
+  },
+  "version": 1
+}

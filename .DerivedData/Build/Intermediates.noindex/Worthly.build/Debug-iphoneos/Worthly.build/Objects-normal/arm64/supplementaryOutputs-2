@@ -1,0 +1,30 @@
+{
+  "/Users/giovan/Programming/ios/Worthly/Worthly/Features/Assets/AssetEditorModels.swift" : {
+    "const-values" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/AssetEditorModels.swiftconstvalues",
+    "dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/AssetEditorModels.d",
+    "diagnostics" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/AssetEditorModels.dia",
+    "object" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/AssetEditorModels.o",
+    "swift-dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/AssetEditorModels.swiftdeps"
+  },
+  "/Users/giovan/Programming/ios/Worthly/Worthly/Features/Assets/AssetEditorRows.swift" : {
+    "const-values" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/AssetEditorRows.swiftconstvalues",
+    "dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/AssetEditorRows.d",
+    "diagnostics" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/AssetEditorRows.dia",
+    "object" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/AssetEditorRows.o",
+    "swift-dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/AssetEditorRows.swiftdeps"
+  },
+  "/Users/giovan/Programming/ios/Worthly/Worthly/Features/Assets/AssetEditorSheets.swift" : {
+    "const-values" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/AssetEditorSheets.swiftconstvalues",
+    "dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/AssetEditorSheets.d",
+    "diagnostics" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/AssetEditorSheets.dia",
+    "object" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/AssetEditorSheets.o",
+    "swift-dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/AssetEditorSheets.swiftdeps"
+  },
+  "/Users/giovan/Programming/ios/Worthly/Worthly/Features/Assets/AssetSummaryViews.swift" : {
+    "const-values" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/AssetSummaryViews.swiftconstvalues",
+    "dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/AssetSummaryViews.d",
+    "diagnostics" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/AssetSummaryViews.dia",
+    "object" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/AssetSummaryViews.o",
+    "swift-dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/AssetSummaryViews.swiftdeps"
+  }
+}

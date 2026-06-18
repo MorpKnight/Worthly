@@ -1,0 +1,72 @@
+{
+  "source": "/Users/giovan/Programming/ios/Worthly/Worthly/Features/History/HistorySummaryViews.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "No transactions yet",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 17
+        }
+      },
+      {
+        "comment": "",
+        "key": "Income, expenses, and account transfers will appear here.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 20
+        }
+      },
+      {
+        "comment": "",
+        "key": "No transactions match this filter.",
+        "location": {
+          "startingColumn": 14,
+          "startingLine": 33
+        }
+      },
+      {
+        "comment": "",
+        "key": "Search transactions",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 64
+        }
+      },
+      {
+        "comment": "",
+        "key": "Search",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 49
+        }
+      },
+      {
+        "comment": "",
+        "key": "June summary, %@, %lld transactions",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 93
+        }
+      },
+      {
+        "comment": "",
+        "key": "June summary",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 102
+        }
+      },
+      {
+        "comment": "",
+        "key": "Transactions",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 117
+        }
+      }
+    ]
+  },
+  "version": 1
+}

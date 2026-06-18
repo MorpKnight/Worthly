@@ -1,0 +1,104 @@
+{
+  "source": "/Users/giovan/Programming/ios/Worthly/Worthly/Features/Overview/HomeView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Overview",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 93
+        }
+      },
+      {
+        "comment": "",
+        "key": "Next action",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 55
+        }
+      },
+      {
+        "comment": "",
+        "key": "Recent Transactions",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 68
+        }
+      },
+      {
+        "comment": "",
+        "key": "Current net worth %@, change %@",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 168
+        }
+      },
+      {
+        "comment": "",
+        "key": "Current Net Worth",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 140
+        }
+      },
+      {
+        "comment": "",
+        "key": "Liquid Assets + Investments - Liabilities",
+        "location": {
+          "startingColumn": 14,
+          "startingLine": 172
+        }
+      },
+      {
+        "comment": "",
+        "key": "Build your money map",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 239
+        }
+      },
+      {
+        "comment": "",
+        "key": "Build your money map",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 190
+        }
+      },
+      {
+        "comment": "",
+        "key": "Start with where your money is stored, then mark whether you have liabilities.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 193
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@, %@",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 310
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@, completed",
+        "location": {
+          "startingColumn": 43,
+          "startingLine": 329
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@, not completed",
+        "location": {
+          "startingColumn": 67,
+          "startingLine": 329
+        }
+      }
+    ]
+  },
+  "version": 1
+}

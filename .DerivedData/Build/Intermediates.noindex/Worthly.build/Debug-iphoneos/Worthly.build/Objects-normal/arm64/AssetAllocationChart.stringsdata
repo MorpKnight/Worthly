@@ -1,0 +1,56 @@
+{
+  "source": "/Users/giovan/Programming/ios/Worthly/Worthly/Features/Assets/AssetAllocationChart.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Asset Allocation",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 42
+        }
+      },
+      {
+        "comment": "",
+        "key": "Liquid accounts + investments",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 45
+        }
+      },
+      {
+        "comment": "",
+        "key": "Asset allocation donut chart",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 182
+        }
+      },
+      {
+        "comment": "",
+        "key": "Assets",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 173
+        }
+      },
+      {
+        "comment": "",
+        "key": "100%",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 177
+        }
+      },
+      {
+        "comment": "",
+        "key": "0%",
+        "location": {
+          "startingColumn": 48,
+          "startingLine": 177
+        }
+      }
+    ]
+  },
+  "version": 1
+}

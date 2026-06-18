@@ -1,0 +1,32 @@
+{
+  "source": "/Users/giovan/Programming/ios/Worthly/Worthly/Features/Planning/PlanningView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Planning",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 137
+        }
+      },
+      {
+        "comment": "",
+        "key": "Assumptions",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 77
+        }
+      },
+      {
+        "comment": "",
+        "key": "Shows or hides the projection date picker",
+        "location": {
+          "startingColumn": 40,
+          "startingLine": 121
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -102,7 +102,7 @@ struct HomeView: View {
                 }
             }
         }
-        .sheet(item: $activeSetupAssetKind) { kind in
+        .fullScreenCover(item: $activeSetupAssetKind) { kind in
             AddAssetEditorSheet(
                 initialKind: kind,
                 referenceDate: store.referenceDate,
@@ -110,10 +110,6 @@ struct HomeView: View {
                 onSaveInvestment: { store.addInvestment($0) },
                 onSaveDebt: { store.addDebt($0) }
             )
-            .presentationDetents([.height(620), .medium])
-            .presentationDragIndicator(.visible)
-            .presentationCornerRadius(28)
-            .presentationBackground(.regularMaterial)
         }
     }
 

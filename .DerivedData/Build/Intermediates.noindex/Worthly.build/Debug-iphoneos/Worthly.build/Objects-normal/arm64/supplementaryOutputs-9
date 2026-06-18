@@ -1,0 +1,23 @@
+{
+  "/Users/giovan/Programming/ios/Worthly/Worthly/Shared/Data/SampleFinanceData.swift" : {
+    "const-values" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/SampleFinanceData.swiftconstvalues",
+    "dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/SampleFinanceData.d",
+    "diagnostics" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/SampleFinanceData.dia",
+    "object" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/SampleFinanceData.o",
+    "swift-dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/SampleFinanceData.swiftdeps"
+  },
+  "/Users/giovan/Programming/ios/Worthly/Worthly/Shared/Formatting/FinanceDisplay.swift" : {
+    "const-values" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/FinanceDisplay.swiftconstvalues",
+    "dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/FinanceDisplay.d",
+    "diagnostics" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/FinanceDisplay.dia",
+    "object" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/FinanceDisplay.o",
+    "swift-dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/FinanceDisplay.swiftdeps"
+  },
+  "/Users/giovan/Programming/ios/Worthly/Worthly/Shared/Formatting/IDRFormatting.swift" : {
+    "const-values" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/IDRFormatting.swiftconstvalues",
+    "dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/IDRFormatting.d",
+    "diagnostics" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/IDRFormatting.dia",
+    "object" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/IDRFormatting.o",
+    "swift-dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/IDRFormatting.swiftdeps"
+  }
+}

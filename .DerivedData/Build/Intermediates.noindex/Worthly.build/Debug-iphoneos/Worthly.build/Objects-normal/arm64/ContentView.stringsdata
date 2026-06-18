@@ -1,0 +1,48 @@
+{
+  "source": "/Users/giovan/Programming/ios/Worthly/Worthly/App/ContentView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Overview",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 59
+        }
+      },
+      {
+        "comment": "",
+        "key": "Planning",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 61
+        }
+      },
+      {
+        "comment": "",
+        "key": "Assets",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 63
+        }
+      },
+      {
+        "comment": "",
+        "key": "History",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 65
+        }
+      },
+      {
+        "comment": "",
+        "key": "Settings",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 67
+        }
+      }
+    ]
+  },
+  "version": 1
+}

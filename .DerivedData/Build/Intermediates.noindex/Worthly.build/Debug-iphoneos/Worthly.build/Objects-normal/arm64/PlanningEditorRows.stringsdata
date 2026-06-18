@@ -1,0 +1,16 @@
+{
+  "source": "/Users/giovan/Programming/ios/Worthly/Worthly/Features/Planning/PlanningEditorRows.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 65
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,24 @@
+{
+  "source": "/Users/giovan/Programming/ios/Worthly/Worthly/Features/History/HistoryView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "History",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 85
+        }
+      },
+      {
+        "comment": "",
+        "key": "Transaction filter",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 35
+        }
+      }
+    ]
+  },
+  "version": 1
+}

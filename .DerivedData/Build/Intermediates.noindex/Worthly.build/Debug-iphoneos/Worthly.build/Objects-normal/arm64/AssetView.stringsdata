@@ -1,0 +1,16 @@
+{
+  "source": "/Users/giovan/Programming/ios/Worthly/Worthly/Features/Assets/AssetView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Assets",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 146
+        }
+      }
+    ]
+  },
+  "version": 1
+}

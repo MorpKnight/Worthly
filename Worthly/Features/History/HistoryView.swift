@@ -94,7 +94,7 @@ struct HistoryView: View {
                 }
             }
         }
-        .sheet(item: $activeEditor) { editor in
+        .fullScreenCover(item: $activeEditor) { editor in
             switch editor {
             case .add:
                 HistoryTransactionEditorSheet(
@@ -104,10 +104,6 @@ struct HistoryView: View {
                     referenceDate: store.referenceDate,
                     onSave: { store.addTransaction($0) }
                 )
-                .presentationDetents([.height(520), .medium])
-                .presentationDragIndicator(.visible)
-                .presentationCornerRadius(28)
-                .presentationBackground(.regularMaterial)
             case .edit(let transactionID):
                 if let transaction = store.transactions.first(where: { $0.id == transactionID }) {
                     HistoryTransactionEditorSheet(
@@ -117,16 +113,8 @@ struct HistoryView: View {
                         referenceDate: store.referenceDate,
                         onSave: { store.updateTransaction($0) }
                     )
-                    .presentationDetents([.height(520), .medium])
-                    .presentationDragIndicator(.visible)
-                    .presentationCornerRadius(28)
-                    .presentationBackground(.regularMaterial)
                 } else {
                     HistoryMissingTransactionSheet()
-                        .presentationDetents([.height(240)])
-                        .presentationDragIndicator(.visible)
-                        .presentationCornerRadius(28)
-                        .presentationBackground(.regularMaterial)
                 }
             }
         }

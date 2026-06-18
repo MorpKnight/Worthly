@@ -1,0 +1,23 @@
+{
+  "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "object" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps"
+  },
+  "/Users/giovan/Programming/ios/Worthly/Worthly/Shared/Formatting/WorthlyDateFormatting.swift" : {
+    "const-values" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/WorthlyDateFormatting.swiftconstvalues",
+    "dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/WorthlyDateFormatting.d",
+    "diagnostics" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/WorthlyDateFormatting.dia",
+    "object" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/WorthlyDateFormatting.o",
+    "swift-dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/WorthlyDateFormatting.swiftdeps"
+  },
+  "/Users/giovan/Programming/ios/Worthly/Worthly/Shared/Models/FinanceModels.swift" : {
+    "const-values" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/FinanceModels.swiftconstvalues",
+    "dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/FinanceModels.d",
+    "diagnostics" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/FinanceModels.dia",
+    "object" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/FinanceModels.o",
+    "swift-dependencies" : "/Users/giovan/Programming/ios/Worthly/.DerivedData/Build/Intermediates.noindex/Worthly.build/Debug-iphoneos/Worthly.build/Objects-normal/arm64/FinanceModels.swiftdeps"
+  }
+}

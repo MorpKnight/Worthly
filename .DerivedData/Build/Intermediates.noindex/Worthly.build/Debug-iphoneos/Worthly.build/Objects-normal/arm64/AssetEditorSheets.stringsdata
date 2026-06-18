@@ -1,0 +1,24 @@
+{
+  "source": "/Users/giovan/Programming/ios/Worthly/Worthly/Features/Assets/AssetEditorSheets.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Asset type",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 81
+        }
+      },
+      {
+        "comment": "",
+        "key": "Please choose another asset.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 254
+        }
+      }
+    ]
+  },
+  "version": 1
+}
