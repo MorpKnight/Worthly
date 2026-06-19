@@ -113,13 +113,7 @@ struct HomeView: View {
                         Label("Liability", systemImage: "creditcard")
                     }
                 } label: {
-                    Image(systemName: "plus")
-                        .font(.title3.weight(.medium))
-                        .frame(width: 44, height: 44)
-                        .background {
-                            Circle()
-                                .fill(.ultraThinMaterial)
-                        }
+                    WorthlyToolbarIconLabel(systemImage: "plus")
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.primary)

@@ -30,19 +30,49 @@ struct WorthlyToolbarIconButton: View {
 
     var body: some View {
         Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.title3.weight(.medium))
-                .frame(width: size, height: size)
-                .background {
-                    if showsCircleBackground {
-                        Circle()
-                            .fill(.ultraThinMaterial)
-                    }
-                }
+            WorthlyToolbarIconLabel(
+                systemImage: systemImage,
+                size: size,
+                showsCircleBackground: showsCircleBackground
+            )
         }
         .buttonStyle(.plain)
         .foregroundStyle(.primary)
         .accessibilityLabel(accessibilityLabel)
+    }
+}
+
+struct WorthlyToolbarIconLabel: View {
+    let systemImage: String
+    let size: CGFloat
+    let showsCircleBackground: Bool
+
+    init(
+        systemImage: String,
+        size: CGFloat = 44,
+        showsCircleBackground: Bool = true
+    ) {
+        self.systemImage = systemImage
+        self.size = size
+        self.showsCircleBackground = showsCircleBackground
+    }
+
+    var body: some View {
+        Group {
+            if showsCircleBackground {
+                icon
+                    .glassEffect(.regular.interactive(), in: Circle())
+            } else {
+                icon
+            }
+        }
+        .contentShape(Circle())
+    }
+
+    private var icon: some View {
+        Image(systemName: systemImage)
+            .font(.title3.weight(.medium))
+            .frame(width: size, height: size)
     }
 }
 

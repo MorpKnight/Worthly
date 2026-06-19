@@ -42,23 +42,24 @@ struct WorthlyFullScreenEditorContainer<Content: View>: View {
     var body: some View {
         VStack(spacing: 0) {
             ZStack {
-                HStack {
-                    WorthlyEditorCircleButton(
-                        systemImage: leadingSystemImage,
-                        accessibilityLabel: leadingAccessibilityLabel,
-                        style: .secondary,
-                        action: onLeading
-                    )
+                GlassEffectContainer(spacing: WorthlySpacing.sheetTitleHorizontal) {
+                    HStack {
+                        WorthlyEditorCircleButton(
+                            systemImage: leadingSystemImage,
+                            accessibilityLabel: leadingAccessibilityLabel,
+                            style: .secondary,
+                            action: onLeading
+                        )
 
-                    Spacer()
+                        Spacer()
 
-                    WorthlyEditorCircleButton(
-                        systemImage: "checkmark",
-                        accessibilityLabel: saveAccessibilityLabel,
-                        style: saveIsEnabled ? .primary : .disabled,
-                        action: onSave
-                    )
-                    .disabled(!saveIsEnabled)
+                        WorthlyEditorCircleButton(
+                            systemImage: "checkmark",
+                            accessibilityLabel: saveAccessibilityLabel,
+                            style: saveIsEnabled ? .primary : .disabled,
+                            action: onSave
+                        )
+                    }
                 }
 
                 Text(title)
@@ -98,15 +99,6 @@ struct WorthlyEditorCircleButton: View {
     let style: Style
     let action: () -> Void
 
-    private var background: Color {
-        switch style {
-        case .primary:
-            WorthlyAccessibleColor.accent
-        case .secondary, .disabled:
-            Color(.systemGray5)
-        }
-    }
-
     private var foreground: Color {
         switch style {
         case .primary:
@@ -119,16 +111,34 @@ struct WorthlyEditorCircleButton: View {
     }
 
     var body: some View {
+        Group {
+            switch style {
+            case .primary:
+                button
+                    .buttonStyle(.glassProminent)
+                    .buttonBorderShape(.circle)
+                    .tint(WorthlyAccessibleColor.accent)
+            case .secondary:
+                button
+                    .buttonStyle(.glass)
+                    .buttonBorderShape(.circle)
+            case .disabled:
+                button
+                    .buttonStyle(.glass(.regular.tint(Color(.systemGray5))))
+                    .buttonBorderShape(.circle)
+                    .disabled(true)
+            }
+        }
+        .accessibilityLabel(accessibilityLabel)
+    }
+
+    private var button: some View {
         Button(action: action) {
             Image(systemName: systemImage)
                 .font(.system(size: 20, weight: .medium))
                 .foregroundStyle(foreground)
                 .frame(width: 44, height: 44)
-                .background(background, in: Circle())
         }
-        .opacity(style == .disabled ? 0.7 : 1)
-        .buttonStyle(.plain)
-        .accessibilityLabel(accessibilityLabel)
     }
 }
 
