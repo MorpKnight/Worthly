@@ -15,6 +15,7 @@ struct SampleFinanceData {
     let sbnInvestments: [SBNInvestment]
     let debts: [Debt]
     let recurringIncomes: [RecurringIncome]
+    let recurringExpenses: [RecurringExpense]
     let checklistActions: [ChecklistAction]
     let netWorthTarget: Decimal
 
@@ -64,17 +65,16 @@ struct SampleFinanceData {
         debts.reduce(0) { $0 + $1.estimatedMonthlyInstallment }
     }
 
-    var projectedNetWorth: Decimal {
-        let paymentCount = Decimal(projectedPaymentCount)
+    var monthlyRecurringExpenses: Decimal {
+        recurringExpenses.reduce(0) { $0 + $1.amount }
+    }
 
-        return currentNetWorth
-            + (monthlySalary * paymentCount)
-            + (monthlySbnCoupon * paymentCount)
-            - (monthlyDebtInstallment * paymentCount)
+    var projectedNetWorth: Decimal {
+        planningProjection.projectedNetWorth
     }
 
     var gapToTarget: Decimal {
-        projectedNetWorth - netWorthTarget
+        planningProjection.gapToTarget
     }
 
     var referenceMonthSummary: (total: Decimal, count: Int) {
@@ -181,6 +181,12 @@ struct SampleFinanceData {
             recurringIncomes: [
                 RecurringIncome(id: UUID(), name: "Monthly salary", amount: 13_500_000, payday: 25)
             ],
+            recurringExpenses: [
+                RecurringExpense(id: UUID(), name: "Rent", amount: 1_900_000, dayOfMonth: 11),
+                RecurringExpense(id: UUID(), name: "Groceries", amount: 2_400_000, dayOfMonth: 7),
+                RecurringExpense(id: UUID(), name: "Internet and phone", amount: 355_000, dayOfMonth: 3),
+                RecurringExpense(id: UUID(), name: "Subscriptions", amount: 250_000, dayOfMonth: 20)
+            ],
             checklistActions: [
                 ChecklistAction(id: UUID(), title: "Add salary", isCompleted: true),
                 ChecklistAction(id: UUID(), title: "Add investment", isCompleted: true),
@@ -231,13 +237,18 @@ struct SampleFinanceData {
         return groups
     }
 
-    private var projectedPaymentCount: Int {
-        let calendar = Calendar(identifier: .gregorian)
-        let start = calendar.dateInterval(of: .month, for: referenceDate)?.start ?? referenceDate
-        let end = calendar.dateInterval(of: .month, for: projectionHorizon)?.start ?? projectionHorizon
-        let months = calendar.dateComponents([.month], from: start, to: end).month ?? 0
-
-        return max(months + 1, 0)
+    private var planningProjection: PlanningProjectionSummary {
+        PlanningProjectionEngine.project(
+            referenceDate: referenceDate,
+            projectionHorizon: projectionHorizon,
+            liquidAssets: liquidAssets,
+            investmentPrincipal: investmentPrincipal,
+            debts: debts,
+            recurringIncomes: recurringIncomes,
+            recurringExpenses: recurringExpenses,
+            investments: sbnInvestments,
+            netWorthTarget: netWorthTarget
+        )
     }
 
     private func isInReferenceMonth(_ date: Date) -> Bool {

@@ -15,6 +15,7 @@ struct FinanceSnapshot: Codable {
     var sbnInvestments: [SBNInvestment]
     var debts: [Debt]
     var recurringIncomes: [RecurringIncome]
+    var recurringExpenses: [RecurringExpense]
     var checklistActions: [ChecklistAction]
     var netWorthTarget: Decimal
     var hasAnsweredLiabilitySetup: Bool
@@ -28,6 +29,7 @@ struct FinanceSnapshot: Codable {
         case sbnInvestments
         case debts
         case recurringIncomes
+        case recurringExpenses
         case checklistActions
         case netWorthTarget
         case hasAnsweredLiabilitySetup
@@ -42,6 +44,7 @@ struct FinanceSnapshot: Codable {
         sbnInvestments = sampleData.sbnInvestments
         debts = sampleData.debts
         recurringIncomes = sampleData.recurringIncomes
+        recurringExpenses = sampleData.recurringExpenses
         checklistActions = sampleData.checklistActions
         netWorthTarget = sampleData.netWorthTarget
         hasAnsweredLiabilitySetup = !sampleData.debts.isEmpty
@@ -56,6 +59,7 @@ struct FinanceSnapshot: Codable {
         sbnInvestments: [SBNInvestment],
         debts: [Debt],
         recurringIncomes: [RecurringIncome],
+        recurringExpenses: [RecurringExpense],
         checklistActions: [ChecklistAction],
         netWorthTarget: Decimal,
         hasAnsweredLiabilitySetup: Bool,
@@ -68,6 +72,7 @@ struct FinanceSnapshot: Codable {
         self.sbnInvestments = sbnInvestments
         self.debts = debts
         self.recurringIncomes = recurringIncomes
+        self.recurringExpenses = recurringExpenses
         self.checklistActions = checklistActions
         self.netWorthTarget = netWorthTarget
         self.hasAnsweredLiabilitySetup = hasAnsweredLiabilitySetup
@@ -84,6 +89,10 @@ struct FinanceSnapshot: Codable {
         sbnInvestments = try container.decode([SBNInvestment].self, forKey: .sbnInvestments)
         debts = try container.decode([Debt].self, forKey: .debts)
         recurringIncomes = try container.decode([RecurringIncome].self, forKey: .recurringIncomes)
+        recurringExpenses = try container.decodeIfPresent(
+            [RecurringExpense].self,
+            forKey: .recurringExpenses
+        ) ?? []
         checklistActions = try container.decode([ChecklistAction].self, forKey: .checklistActions)
         netWorthTarget = try container.decode(Decimal.self, forKey: .netWorthTarget)
         hasAnsweredLiabilitySetup = try container.decodeIfPresent(
@@ -117,6 +126,7 @@ struct FinanceSnapshot: Codable {
             sbnInvestments: [],
             debts: [],
             recurringIncomes: [],
+            recurringExpenses: [],
             checklistActions: [],
             netWorthTarget: 0,
             hasAnsweredLiabilitySetup: false,

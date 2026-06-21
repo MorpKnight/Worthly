@@ -11,13 +11,27 @@ struct PlanningTextFieldRow: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     let placeholder: String
+    let keyboardType: UIKeyboardType
+    let usesMonospacedDigits: Bool
     @Binding var text: String
+
+    init(
+        placeholder: String,
+        text: Binding<String>,
+        keyboardType: UIKeyboardType = .decimalPad,
+        usesMonospacedDigits: Bool = true
+    ) {
+        self.placeholder = placeholder
+        _text = text
+        self.keyboardType = keyboardType
+        self.usesMonospacedDigits = usesMonospacedDigits
+    }
 
     var body: some View {
         TextField(placeholder, text: $text, axis: .vertical)
             .font(.body.weight(.semibold))
-            .monospacedDigit()
-            .keyboardType(.decimalPad)
+            .modifier(PlanningMonospacedDigitModifier(isEnabled: usesMonospacedDigits))
+            .keyboardType(keyboardType)
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled()
             .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? 1...2 : 1...1)
@@ -33,16 +47,49 @@ struct PlanningTextFieldRow: View {
 struct PlanningLabeledTextFieldRow: View {
     let title: String
     let placeholder: String
+    let keyboardType: UIKeyboardType
+    let usesMonospacedDigits: Bool
     @Binding var text: String
+
+    init(
+        title: String,
+        placeholder: String,
+        text: Binding<String>,
+        keyboardType: UIKeyboardType = .decimalPad,
+        usesMonospacedDigits: Bool = true
+    ) {
+        self.title = title
+        self.placeholder = placeholder
+        _text = text
+        self.keyboardType = keyboardType
+        self.usesMonospacedDigits = usesMonospacedDigits
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: WorthlySpacing.xs) {
             Text(title)
                 .font(.body)
 
-            PlanningTextFieldRow(placeholder: placeholder, text: $text)
+            PlanningTextFieldRow(
+                placeholder: placeholder,
+                text: $text,
+                keyboardType: keyboardType,
+                usesMonospacedDigits: usesMonospacedDigits
+            )
         }
         .padding(.bottom, WorthlySpacing.sm)
+    }
+}
+
+private struct PlanningMonospacedDigitModifier: ViewModifier {
+    let isEnabled: Bool
+
+    func body(content: Content) -> some View {
+        if isEnabled {
+            content.monospacedDigit()
+        } else {
+            content
+        }
     }
 }
 

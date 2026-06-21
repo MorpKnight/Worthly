@@ -77,6 +77,64 @@ enum PlanningInputFormatting {
     }
 }
 
+struct RecurringExpenseDraft: Identifiable {
+    let id: UUID
+    var name: String
+    var amountText: String
+    var dayText: String
+
+    init() {
+        id = UUID()
+        name = ""
+        amountText = ""
+        dayText = "1"
+    }
+
+    init(expense: RecurringExpense) {
+        id = expense.id
+        name = expense.name
+        amountText = PlanningInputFormatting.currency(expense.amount)
+        dayText = "\(expense.dayOfMonth)"
+    }
+
+    private var trimmedName: String {
+        name.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var amount: Decimal? {
+        PlanningInputFormatting.decimal(from: amountText)
+    }
+
+    private var dayOfMonth: Int? {
+        guard let day = PlanningInputFormatting.integer(from: dayText) else {
+            return nil
+        }
+
+        return min(max(day, 1), 31)
+    }
+
+    var isValid: Bool {
+        guard let amount, dayOfMonth != nil else {
+            return false
+        }
+
+        return !trimmedName.isEmpty && amount > 0
+    }
+
+    var expense: RecurringExpense? {
+        guard let amount, let dayOfMonth, isValid else {
+            return nil
+        }
+
+        return RecurringExpense(
+            id: id,
+            name: trimmedName,
+            amount: amount,
+            dayOfMonth: dayOfMonth
+        )
+    }
+}
+
 extension Debt {
     var editorIcon: String {
         let lowercasedName = name.lowercased()

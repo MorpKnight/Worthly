@@ -35,6 +35,9 @@ final class FinanceStore {
     var recurringIncomes: [RecurringIncome] {
         didSet { persistIfNeeded() }
     }
+    var recurringExpenses: [RecurringExpense] {
+        didSet { persistIfNeeded() }
+    }
     var checklistActions: [ChecklistAction] {
         didSet { persistIfNeeded() }
     }
@@ -69,6 +72,7 @@ final class FinanceStore {
         sbnInvestments = snapshot.sbnInvestments
         debts = snapshot.debts
         recurringIncomes = snapshot.recurringIncomes
+        recurringExpenses = snapshot.recurringExpenses
         checklistActions = snapshot.checklistActions
         netWorthTarget = snapshot.netWorthTarget
         hasAnsweredLiabilitySetup = snapshot.hasAnsweredLiabilitySetup
@@ -140,19 +144,34 @@ final class FinanceStore {
         sbnInvestments.reduce(0) { $0 + $1.estimatedMonthlyCoupon }
     }
 
+    var monthlyRecurringExpenses: Decimal {
+        recurringExpenses.reduce(0) { $0 + $1.amount }
+    }
+
     var monthlyDebtInstallment: Decimal {
         debts.reduce(0) { $0 + $1.estimatedMonthlyInstallment }
     }
 
+    var planningProjection: PlanningProjectionSummary {
+        PlanningProjectionEngine.project(
+            referenceDate: referenceDate,
+            projectionHorizon: projectionHorizon,
+            liquidAssets: liquidAssets,
+            investmentPrincipal: investmentPrincipal,
+            debts: debts,
+            recurringIncomes: recurringIncomes,
+            recurringExpenses: recurringExpenses,
+            investments: sbnInvestments,
+            netWorthTarget: netWorthTarget
+        )
+    }
+
     var projectedNetWorth: Decimal {
-        return currentNetWorth
-            + projectedRecurringIncome
-            + projectedSbnCoupon
-            - projectedDebtInstallment
+        planningProjection.projectedNetWorth
     }
 
     var gapToTarget: Decimal {
-        projectedNetWorth - netWorthTarget
+        planningProjection.gapToTarget
     }
 
     var referenceMonthSummary: (total: Decimal, count: Int) {
@@ -314,6 +333,10 @@ final class FinanceStore {
         }
     }
 
+    func saveRecurringExpenses(_ expenses: [RecurringExpense]) {
+        recurringExpenses = expenses
+    }
+
     func addTransaction(_ transaction: FinanceTransaction) {
         transactions.append(transaction)
         applyBalanceEffect(of: transaction)
@@ -357,46 +380,6 @@ final class FinanceStore {
             && referenceComponents.month == dateComponents.month
     }
 
-    private var projectedRecurringIncome: Decimal {
-        recurringIncomes.reduce(0) { total, income in
-            let paymentCount = monthlyOccurrenceCount(
-                day: income.payday,
-                fromAfter: referenceDate,
-                through: projectionHorizon
-            )
-
-            return total + income.amount * Decimal(paymentCount)
-        }
-    }
-
-    private var projectedSbnCoupon: Decimal {
-        sbnInvestments.reduce(0) { total, investment in
-            let paymentCount = monthlyOccurrenceCount(
-                day: Calendar.worthly.component(.day, from: investment.startDate),
-                fromAfter: referenceDate,
-                through: projectionHorizon,
-                activeFrom: investment.startDate,
-                activeUntil: investment.maturityDate()
-            )
-
-            return total + investment.estimatedMonthlyCoupon * Decimal(paymentCount)
-        }
-    }
-
-    private var projectedDebtInstallment: Decimal {
-        debts.reduce(0) { total, debt in
-            let paymentCount = monthlyOccurrenceCount(
-                day: Calendar.worthly.component(.day, from: debt.startDate),
-                fromAfter: referenceDate,
-                through: projectionHorizon,
-                activeFrom: debt.startDate,
-                activeUntil: debt.maturityDate()
-            )
-
-            return total + debt.estimatedMonthlyInstallment * Decimal(paymentCount)
-        }
-    }
-
     private var snapshot: FinanceSnapshot {
         FinanceSnapshot(
             referenceDate: referenceDate,
@@ -406,6 +389,7 @@ final class FinanceStore {
             sbnInvestments: sbnInvestments,
             debts: debts,
             recurringIncomes: recurringIncomes,
+            recurringExpenses: recurringExpenses,
             checklistActions: checklistActions,
             netWorthTarget: netWorthTarget,
             hasAnsweredLiabilitySetup: hasAnsweredLiabilitySetup,
@@ -437,63 +421,11 @@ final class FinanceStore {
         sbnInvestments = snapshot.sbnInvestments
         debts = snapshot.debts
         recurringIncomes = snapshot.recurringIncomes
+        recurringExpenses = snapshot.recurringExpenses
         checklistActions = snapshot.checklistActions
         netWorthTarget = snapshot.netWorthTarget
         hasAnsweredLiabilitySetup = snapshot.hasAnsweredLiabilitySetup
         hasCompletedOnboarding = snapshot.hasCompletedOnboarding
-    }
-
-    private func monthlyOccurrenceCount(
-        day: Int,
-        fromAfter startDate: Date,
-        through endDate: Date,
-        activeFrom: Date? = nil,
-        activeUntil: Date? = nil
-    ) -> Int {
-        let calendar = Calendar.worthly
-        let lowerBound = [startDate, activeFrom].compactMap { $0 }.max() ?? startDate
-        let upperBound = [endDate, activeUntil].compactMap { $0 }.min() ?? endDate
-
-        guard upperBound > lowerBound else {
-            return 0
-        }
-
-        guard var monthCursor = calendar.dateInterval(of: .month, for: lowerBound)?.start,
-              let endMonth = calendar.dateInterval(of: .month, for: upperBound)?.start else {
-            return 0
-        }
-
-        var count = 0
-
-        while monthCursor <= endMonth {
-            let occurrence = clampedDate(day: day, inMonthContaining: monthCursor)
-
-            if occurrence > startDate,
-               occurrence >= lowerBound,
-               occurrence <= upperBound {
-                count += 1
-            }
-
-            monthCursor = calendar.date(byAdding: .month, value: 1, to: monthCursor) ?? endMonth.addingTimeInterval(1)
-        }
-
-        return count
-    }
-
-    private func clampedDate(day: Int, inMonthContaining date: Date) -> Date {
-        let calendar = Calendar.worthly
-        let dayRange = calendar.range(of: .day, in: .month, for: date)
-        let clampedDay = min(max(day, 1), dayRange?.count ?? day)
-        let components = calendar.dateComponents([.year, .month], from: date)
-
-        return DateComponents(
-            calendar: calendar,
-            timeZone: calendar.timeZone,
-            year: components.year,
-            month: components.month,
-            day: clampedDay,
-            hour: 12
-        ).date ?? date
     }
 
     private func absolute(_ amount: Decimal) -> Decimal {

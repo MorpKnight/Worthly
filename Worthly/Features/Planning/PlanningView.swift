@@ -27,8 +27,16 @@ struct PlanningView: View {
         store.monthlySbnCoupon
     }
 
+    private var monthlyRecurringExpenses: Decimal {
+        store.monthlyRecurringExpenses
+    }
+
     private var monthlyDebtInstallment: Decimal {
         store.monthlyDebtInstallment
+    }
+
+    private var planningProjection: PlanningProjectionSummary {
+        store.planningProjection
     }
 
     private var projectedNetWorth: Decimal {
@@ -39,10 +47,21 @@ struct PlanningView: View {
         store.gapToTarget
     }
 
+    private var netWorthTarget: Decimal {
+        store.netWorthTarget
+    }
+
+    private var projectionRange: ClosedRange<Date> {
+        let start = store.referenceDate
+        let end = Calendar.worthly.date(byAdding: .year, value: 10, to: start) ?? start
+
+        return start...end
+    }
+
     private var projectionHorizon: Binding<Date> {
         Binding(
             get: { store.projectionHorizon },
-            set: { store.projectionHorizon = $0 }
+            set: { store.projectionHorizon = clampedProjectionDate($0) }
         )
     }
 
@@ -69,7 +88,17 @@ struct PlanningView: View {
                         projectedNetWorth: projectedNetWorth
                     )
 
-                    GapCard(gap: gapToTarget)
+                    TargetReadinessCard(
+                        summary: planningProjection,
+                        horizon: store.projectionHorizon
+                    )
+
+                    GapCard(
+                        gap: gapToTarget,
+                        target: netWorthTarget
+                    )
+
+                    PlanningMonthlyBreakdownCard(summary: planningProjection)
                 } else {
                     PlanningEmptyStateCard()
                 }
@@ -90,6 +119,16 @@ struct PlanningView: View {
                     .buttonStyle(.plain)
 
                     Button {
+                        activeEditor = .expenses
+                    } label: {
+                        WorthlyDisclosureRow(
+                            title: "Recurring expenses",
+                            value: IDRFormatting.compact(monthlyRecurringExpenses)
+                        )
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
                         activeEditor = .investments
                     } label: {
                         WorthlyDisclosureRow(
@@ -103,8 +142,19 @@ struct PlanningView: View {
                         activeEditor = .debts
                     } label: {
                         WorthlyDisclosureRow(
-                            title: "Debt installments (monthly)",
+                            title: "Liability payments (monthly)",
                             value: IDRFormatting.compact(monthlyDebtInstallment)
+                        )
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        activeEditor = .target
+                    } label: {
+                        WorthlyDisclosureRow(
+                            title: "Target net worth",
+                            value: netWorthTarget > 0 ? IDRFormatting.compact(netWorthTarget) : "Not set",
+                            valueUsesMonospacedDigits: netWorthTarget > 0
                         )
                     }
                     .buttonStyle(.plain)
@@ -121,7 +171,10 @@ struct PlanningView: View {
                     .accessibilityHint("Shows or hides the projection date picker")
 
                     if showsProjectionCalendar {
-                        ProjectionHorizonCalendar(selection: projectionHorizon)
+                        ProjectionHorizonCalendar(
+                            selection: projectionHorizon,
+                            range: projectionRange
+                        )
                             .padding(.top, WorthlySpacing.xs)
                             .padding(.bottom, WorthlySpacing.sm)
                             .transition(calendarTransition)
@@ -143,10 +196,28 @@ struct PlanningView: View {
                     incomes: store.recurringIncomes,
                     onSave: { store.saveSalaryAmounts($0) }
                 )
+            case .expenses:
+                RecurringExpenseEditorSheet(
+                    expenses: store.recurringExpenses,
+                    onSave: { store.saveRecurringExpenses($0) }
+                )
             case .investments:
-                InvestmentEditorSheet(investments: investments)
+                InvestmentEditorSheet(
+                    investments: investments,
+                    referenceDate: store.referenceDate,
+                    onAddInvestment: { store.addInvestment($0) }
+                )
             case .debts:
-                DebtEditorSheet(debts: debts)
+                DebtEditorSheet(
+                    debts: debts,
+                    referenceDate: store.referenceDate,
+                    onAddDebt: { store.addDebt($0) }
+                )
+            case .target:
+                TargetNetWorthEditorSheet(
+                    target: store.netWorthTarget,
+                    onSave: { store.netWorthTarget = $0 }
+                )
             }
         }
     }
@@ -164,12 +235,18 @@ struct PlanningView: View {
             }
         }
     }
+
+    private func clampedProjectionDate(_ date: Date) -> Date {
+        min(max(date, projectionRange.lowerBound), projectionRange.upperBound)
+    }
 }
 
 private enum PlanningEditor: String, Identifiable {
     case salary
+    case expenses
     case investments
     case debts
+    case target
 
     var id: String {
         rawValue

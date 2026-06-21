@@ -75,10 +75,176 @@ struct MonthlySalaryEditorSheet: View {
     }
 }
 
+struct RecurringExpenseEditorSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var drafts: [RecurringExpenseDraft]
+
+    let onSave: ([RecurringExpense]) -> Void
+
+    @MainActor
+    init(expenses: [RecurringExpense], onSave: @escaping ([RecurringExpense]) -> Void) {
+        let initialDrafts = expenses.map(RecurringExpenseDraft.init(expense:))
+
+        _drafts = State(initialValue: initialDrafts.isEmpty ? [RecurringExpenseDraft()] : initialDrafts)
+        self.onSave = onSave
+    }
+
+    private var validExpenses: [RecurringExpense] {
+        drafts.compactMap(\.expense)
+    }
+
+    var body: some View {
+        PlanningSheetContainer(
+            title: "Edit Recurring Expenses",
+            leadingSystemImage: "xmark",
+            leadingAccessibilityLabel: "Cancel editing recurring expenses",
+            saveIsEnabled: !validExpenses.isEmpty,
+            onLeading: { dismiss() },
+            onSave: save
+        ) {
+            VStack(alignment: .leading, spacing: WorthlySpacing.md) {
+                ForEach(drafts.indices, id: \.self) { index in
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("Expense \(index + 1)")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .padding(.bottom, WorthlySpacing.sm)
+
+                        PlanningLabeledTextFieldRow(
+                            title: "Name",
+                            placeholder: "Rent, groceries, subscriptions",
+                            text: Binding(
+                                get: { drafts[index].name },
+                                set: { drafts[index].name = $0 }
+                            ),
+                            keyboardType: .default,
+                            usesMonospacedDigits: false
+                        )
+
+                        PlanningLabeledTextFieldRow(
+                            title: "Amount",
+                            placeholder: "Rp 0",
+                            text: Binding(
+                                get: { drafts[index].amountText },
+                                set: { drafts[index].amountText = $0 }
+                            )
+                        )
+
+                        PlanningLabeledTextFieldRow(
+                            title: "Day of month",
+                            placeholder: "1",
+                            text: Binding(
+                                get: { drafts[index].dayText },
+                                set: { drafts[index].dayText = $0 }
+                            ),
+                            keyboardType: .numberPad
+                        )
+                    }
+                }
+
+                Button {
+                    drafts.append(RecurringExpenseDraft())
+                } label: {
+                    Label("Add more", systemImage: "plus")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, minHeight: 54, alignment: .leading)
+                        .overlay(alignment: .bottom) {
+                            PlanningSeparator()
+                        }
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Add another recurring expense")
+            }
+        }
+    }
+
+    private func save() {
+        let expenses = validExpenses
+
+        guard !expenses.isEmpty else {
+            return
+        }
+
+        onSave(expenses)
+        dismiss()
+    }
+}
+
+struct TargetNetWorthEditorSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var amountText: String
+
+    let onSave: (Decimal) -> Void
+
+    init(target: Decimal, onSave: @escaping (Decimal) -> Void) {
+        _amountText = State(initialValue: target > 0 ? PlanningInputFormatting.currency(target) : "")
+        self.onSave = onSave
+    }
+
+    private var amount: Decimal? {
+        PlanningInputFormatting.decimal(from: amountText)
+    }
+
+    private var canSave: Bool {
+        guard let amount else {
+            return false
+        }
+
+        return amount > 0
+    }
+
+    var body: some View {
+        PlanningSheetContainer(
+            title: "Edit Target Net Worth",
+            leadingSystemImage: "xmark",
+            leadingAccessibilityLabel: "Cancel editing target net worth",
+            saveIsEnabled: canSave,
+            onLeading: { dismiss() },
+            onSave: save
+        ) {
+            VStack(alignment: .leading, spacing: WorthlySpacing.sm) {
+                PlanningLabeledTextFieldRow(
+                    title: "Target Amount",
+                    placeholder: "Rp 0",
+                    text: $amountText
+                )
+
+                Text("Used to compare your projected net worth against a goal.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private func save() {
+        guard let amount, amount > 0 else {
+            return
+        }
+
+        onSave(amount)
+        dismiss()
+    }
+}
+
 struct InvestmentEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var investments: [SBNInvestment]
     @State private var route: InvestmentEditorRoute = .list
+
+    let referenceDate: Date
+    let onAddInvestment: (SBNInvestment) -> Void
+
+    init(
+        investments: Binding<[SBNInvestment]>,
+        referenceDate: Date,
+        onAddInvestment: @escaping (SBNInvestment) -> Void
+    ) {
+        _investments = investments
+        self.referenceDate = referenceDate
+        self.onAddInvestment = onAddInvestment
+    }
 
     var body: some View {
         switch route {
@@ -92,16 +258,28 @@ struct InvestmentEditorSheet: View {
                 onSave: {}
             ) {
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("Which one to edit")
-                        .font(.body)
-                        .padding(.bottom, WorthlySpacing.sm)
-
-                    ForEach(investments) { investment in
-                        PlanningSelectionRow(
-                            icon: "chart.line.uptrend.xyaxis",
-                            title: investment.name
+                    if investments.isEmpty {
+                        PlanningEditorEmptyState(
+                            systemImage: "chart.line.uptrend.xyaxis",
+                            title: "No investments yet",
+                            message: "Add an investment to include its estimated return in your projection.",
+                            buttonTitle: "Add investment",
+                            buttonSystemImage: "plus"
                         ) {
-                            route = .detail(investment.id)
+                            route = .add
+                        }
+                    } else {
+                        Text("Which one to edit")
+                            .font(.body)
+                            .padding(.bottom, WorthlySpacing.sm)
+
+                        ForEach(investments) { investment in
+                            PlanningSelectionRow(
+                                icon: "chart.line.uptrend.xyaxis",
+                                title: investment.name
+                            ) {
+                                route = .detail(investment.id)
+                            }
                         }
                     }
                 }
@@ -119,6 +297,16 @@ struct InvestmentEditorSheet: View {
                     onClose: { dismiss() }
                 )
             }
+        case .add:
+            AddAssetEditorSheet(
+                title: "Add Investment",
+                initialKind: .sbnInvestment,
+                allowedKinds: [.sbnInvestment],
+                referenceDate: referenceDate,
+                onSaveAccount: { _ in },
+                onSaveInvestment: { onAddInvestment($0) },
+                onSaveDebt: { _ in }
+            )
         }
     }
 }
@@ -126,6 +314,7 @@ struct InvestmentEditorSheet: View {
 private enum InvestmentEditorRoute {
     case list
     case detail(UUID)
+    case add
 }
 
 private struct InvestmentDetailEditorSheet: View {
@@ -218,28 +407,53 @@ struct DebtEditorSheet: View {
     @Binding var debts: [Debt]
     @State private var route: DebtEditorRoute = .list
 
+    let referenceDate: Date
+    let onAddDebt: (Debt) -> Void
+
+    init(
+        debts: Binding<[Debt]>,
+        referenceDate: Date,
+        onAddDebt: @escaping (Debt) -> Void
+    ) {
+        _debts = debts
+        self.referenceDate = referenceDate
+        self.onAddDebt = onAddDebt
+    }
+
     var body: some View {
         switch route {
         case .list:
             PlanningSheetContainer(
-                title: "Edit Debt",
+                title: "Edit Liability",
                 leadingSystemImage: "xmark",
-                leadingAccessibilityLabel: "Cancel editing debt",
+                leadingAccessibilityLabel: "Cancel editing liability",
                 saveIsEnabled: false,
                 onLeading: { dismiss() },
                 onSave: {}
             ) {
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("Which one to edit")
-                        .font(.body)
-                        .padding(.bottom, WorthlySpacing.sm)
-
-                    ForEach(debts) { debt in
-                        PlanningSelectionRow(
-                            icon: debt.editorIcon,
-                            title: debt.name
+                    if debts.isEmpty {
+                        PlanningEditorEmptyState(
+                            systemImage: "creditcard",
+                            title: "No liabilities yet",
+                            message: "Add a liability to include its monthly payment in your projection.",
+                            buttonTitle: "Add liability",
+                            buttonSystemImage: "plus"
                         ) {
-                            route = .detail(debt.id)
+                            route = .add
+                        }
+                    } else {
+                        Text("Which one to edit")
+                            .font(.body)
+                            .padding(.bottom, WorthlySpacing.sm)
+
+                        ForEach(debts) { debt in
+                            PlanningSelectionRow(
+                                icon: debt.editorIcon,
+                                title: debt.name
+                            ) {
+                                route = .detail(debt.id)
+                            }
                         }
                     }
                 }
@@ -253,10 +467,20 @@ struct DebtEditorSheet: View {
                 )
             } else {
                 PlanningMissingSelectionSheet(
-                    title: "Debt not found",
+                    title: "Liability not found",
                     onClose: { dismiss() }
                 )
             }
+        case .add:
+            AddAssetEditorSheet(
+                title: "Add Liability",
+                initialKind: .liability,
+                allowedKinds: [.liability],
+                referenceDate: referenceDate,
+                onSaveAccount: { _ in },
+                onSaveInvestment: { _ in },
+                onSaveDebt: { onAddDebt($0) }
+            )
         }
     }
 }
@@ -264,6 +488,7 @@ struct DebtEditorSheet: View {
 private enum DebtEditorRoute {
     case list
     case detail(UUID)
+    case add
 }
 
 private struct DebtDetailEditorSheet: View {
@@ -314,14 +539,14 @@ private struct DebtDetailEditorSheet: View {
         PlanningSheetContainer(
             title: "Edit \(debt.name)",
             leadingSystemImage: "chevron.left",
-            leadingAccessibilityLabel: "Back to debt list",
+            leadingAccessibilityLabel: "Back to liability list",
             saveIsEnabled: canSave,
             onLeading: onBack,
             onSave: save
         ) {
             VStack(alignment: .leading, spacing: 0) {
                 PlanningLabeledTextFieldRow(
-                    title: "Debt Value",
+                    title: "Liability Value",
                     placeholder: "Rp 0,00",
                     text: $amountText
                 )
@@ -416,6 +641,26 @@ private struct PlanningSelectionRow: View {
             )
         }
         .buttonStyle(.plain)
+    }
+}
+
+private struct PlanningEditorEmptyState: View {
+    let systemImage: String
+    let title: String
+    let message: String
+    let buttonTitle: String
+    let buttonSystemImage: String
+    let action: () -> Void
+
+    var body: some View {
+        WorthlyEmptyStateCard(
+            systemImage: systemImage,
+            title: title,
+            message: message,
+            buttonTitle: buttonTitle,
+            buttonSystemImage: buttonSystemImage,
+            action: action
+        )
     }
 }
 

@@ -102,7 +102,7 @@ struct AssetDebtForm: View {
 
         AssetEditorTextFieldRow(
             icon: "banknote",
-            title: "Debt Value",
+            title: "Liability Value",
             placeholder: "Rp 0",
             text: $draft.remainingAmountText,
             keyboardType: .decimalPad

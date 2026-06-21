@@ -139,6 +139,13 @@ struct RecurringIncome: Identifiable, Codable {
     var payday: Int
 }
 
+struct RecurringExpense: Identifiable, Codable {
+    let id: UUID
+    var name: String
+    var amount: Decimal
+    var dayOfMonth: Int
+}
+
 struct ChecklistAction: Identifiable, Codable {
     let id: UUID
     var title: String
