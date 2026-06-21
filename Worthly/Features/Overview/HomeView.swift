@@ -93,6 +93,17 @@ struct HomeView: View {
         .navigationTitle("Overview")
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                NavigationLink {
+                    SettingView(store: store)
+                } label: {
+                    WorthlyToolbarIconLabel(systemImage: "gearshape")
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.primary)
+                .accessibilityLabel("Settings")
+            }
+
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button {

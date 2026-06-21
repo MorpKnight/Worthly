@@ -16,10 +16,10 @@ Worthly is not trying to be a full accounting system yet. The first product dire
 
 ## Current Features
 
-- Five-tab SwiftUI app: Overview, Planning, Assets, History, and Settings.
+- Four-tab SwiftUI app: Overview, Planning, Assets, and History, with Settings opened from Overview.
 - First-run onboarding flow for adding the first account, liability status, optional investment, and optional first transaction.
 - Local JSON persistence with backward-compatible decoding.
-- Safe `Use dummy data` toggle in Settings that preserves real local data.
+- Safe `Use dummy data` toggle in Settings, reached from Overview, that preserves real local data.
 - Overview dashboard with net worth, cashflow, planning preview, setup actions, and recent transactions.
 - Assets page with liquid accounts, investments, liabilities, and a contrast-aware allocation donut chart.
 - Add and edit flows for accounts, investments, and liabilities.
@@ -74,7 +74,7 @@ If the sandboxed build cannot access CoreSimulator or asset catalog services, re
 
 - Data is stored locally as JSON.
 - Fresh installs start empty.
-- Dummy data is opt-in from Settings.
+- Dummy data is opt-in from Settings, opened from Overview.
 - Enabling dummy data preserves the current user snapshot.
 - Disabling dummy data restores the preserved user snapshot.
 - Reset local data clears the local snapshot and returns the app to empty setup.

@@ -35,7 +35,7 @@ enum HistoryEditorTransactionType: String, CaseIterable, Identifiable {
         case .outcome:
             "Outcome"
         case .account:
-            "Account"
+            "Transfer"
         }
     }
 

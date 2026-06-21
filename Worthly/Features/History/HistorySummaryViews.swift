@@ -26,37 +26,10 @@ struct HistoryFilterEmptyState: View {
     }
 }
 
-struct SearchField: View {
+struct MonthSummaryCard: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    var body: some View {
-        HStack(alignment: dynamicTypeSize.isWorthlyAccessibilitySize ? .top : .center, spacing: WorthlySpacing.xs) {
-            Image(systemName: "magnifyingglass")
-                .font(.title3.weight(.medium))
-                .foregroundStyle(.secondary)
-
-            Text("Search")
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .lineLimit(dynamicTypeSize.isWorthlyAccessibilitySize ? nil : 1)
-
-            Spacer(minLength: WorthlySpacing.xs)
-
-            Image(systemName: "mic")
-                .font(.body.weight(.medium))
-                .foregroundStyle(.secondary)
-        }
-        .padding(.horizontal, WorthlySpacing.sm)
-        .padding(.vertical, dynamicTypeSize.isWorthlyAccessibilitySize ? WorthlySpacing.sm : 0)
-        .frame(minHeight: 48)
-        .background(Color(.secondarySystemGroupedBackground), in: Capsule())
-        .accessibilityLabel("Search transactions")
-    }
-}
-
-struct JuneSummaryCard: View {
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-
+    let title: String
     let total: Decimal
     let count: Int
 
@@ -78,7 +51,7 @@ struct JuneSummaryCard: View {
             }
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("June summary, \(IDRFormatting.signedCompact(total)), \(count) transactions")
+        .accessibilityLabel("\(title), \(IDRFormatting.signedCompact(total)), \(count) transactions")
     }
 
     private var amountColor: Color {
@@ -87,7 +60,7 @@ struct JuneSummaryCard: View {
 
     private var amountBlock: some View {
         VStack(alignment: .leading, spacing: WorthlySpacing.md) {
-            Text("June summary")
+            Text(title)
                 .font(.caption)
 
             WorthlyAmountText(

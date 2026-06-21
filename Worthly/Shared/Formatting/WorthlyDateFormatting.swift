@@ -16,6 +16,14 @@ enum WorthlyDateFormatting {
         return formatter.string(from: date)
     }
 
+    static func historyMonthSummaryTitle(for date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "MMMM"
+
+        return "\(formatter.string(from: date)) summary"
+    }
+
     static func historySectionTitle(for date: Date, referenceDate: Date) -> String {
         let calendar = Calendar(identifier: .gregorian)
 

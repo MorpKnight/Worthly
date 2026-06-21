@@ -12,34 +12,10 @@
       },
       {
         "comment": "",
-        "key": "Search transactions",
+        "key": "%@, %@, %lld transactions",
         "location": {
           "startingColumn": 29,
-          "startingLine": 53
-        }
-      },
-      {
-        "comment": "",
-        "key": "Search",
-        "location": {
-          "startingColumn": 18,
-          "startingLine": 38
-        }
-      },
-      {
-        "comment": "",
-        "key": "June summary, %@, %lld transactions",
-        "location": {
-          "startingColumn": 29,
-          "startingLine": 81
-        }
-      },
-      {
-        "comment": "",
-        "key": "June summary",
-        "location": {
-          "startingColumn": 18,
-          "startingLine": 90
+          "startingLine": 54
         }
       },
       {
@@ -47,7 +23,7 @@
         "key": "Transactions",
         "location": {
           "startingColumn": 18,
-          "startingLine": 105
+          "startingLine": 78
         }
       }
     ]

@@ -39,7 +39,8 @@ struct SettingView: View {
                         rowMinHeight: 52,
                         horizontalPadding: 16,
                         separatorLeadingInset: 16,
-                        valueUsesMonospacedDigits: false
+                        valueUsesMonospacedDigits: false,
+                        showsChevron: false
                     )
 
                     WorthlyDisclosureRow(
@@ -48,7 +49,8 @@ struct SettingView: View {
                         rowMinHeight: 52,
                         horizontalPadding: 16,
                         separatorLeadingInset: 16,
-                        valueUsesMonospacedDigits: false
+                        valueUsesMonospacedDigits: false,
+                        showsChevron: false
                     )
                 }
                 .padding(.bottom, WorthlySpacing.sm)

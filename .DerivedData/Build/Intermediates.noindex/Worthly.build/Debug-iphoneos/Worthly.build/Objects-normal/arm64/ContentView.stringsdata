@@ -7,7 +7,7 @@
         "key": "Overview",
         "location": {
           "startingColumn": 19,
-          "startingLine": 65
+          "startingLine": 62
         }
       },
       {
@@ -15,7 +15,7 @@
         "key": "Planning",
         "location": {
           "startingColumn": 19,
-          "startingLine": 67
+          "startingLine": 64
         }
       },
       {
@@ -23,7 +23,7 @@
         "key": "Assets",
         "location": {
           "startingColumn": 19,
-          "startingLine": 69
+          "startingLine": 66
         }
       },
       {
@@ -31,15 +31,7 @@
         "key": "History",
         "location": {
           "startingColumn": 19,
-          "startingLine": 71
-        }
-      },
-      {
-        "comment": "",
-        "key": "Settings",
-        "location": {
-          "startingColumn": 19,
-          "startingLine": 73
+          "startingLine": 68
         }
       }
     ]

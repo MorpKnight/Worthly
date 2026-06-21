@@ -43,8 +43,6 @@ struct ContentView: View {
             AssetView(store: store)
         case .history:
             HistoryView(store: store)
-        case .settings:
-            SettingView(store: store)
         }
     }
 }
@@ -54,7 +52,6 @@ private enum AppTab: String, CaseIterable, Identifiable {
     case planning
     case assets
     case history
-    case settings
 
     var id: Self { self }
 
@@ -69,8 +66,6 @@ private enum AppTab: String, CaseIterable, Identifiable {
             Label("Assets", systemImage: "wallet.pass")
         case .history:
             Label("History", systemImage: "list.bullet.rectangle")
-        case .settings:
-            Label("Settings", systemImage: "gearshape")
         }
     }
 }

@@ -40,12 +40,11 @@ struct HistoryView: View {
                 }
                 .pickerStyle(.segmented)
 
-                SearchField()
-
                 if store.transactions.isEmpty {
                     HistoryEmptyState()
                 } else {
-                    JuneSummaryCard(
+                    MonthSummaryCard(
+                        title: WorthlyDateFormatting.historyMonthSummaryTitle(for: store.referenceDate),
                         total: referenceMonthSummary.total,
                         count: referenceMonthSummary.count
                     )
@@ -152,7 +151,7 @@ private enum HistoryFilter: String, CaseIterable, Identifiable {
         case .expense:
             "Expense"
         case .account:
-            "Account"
+            "Transfer"
         }
     }
 
