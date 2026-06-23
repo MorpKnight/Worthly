@@ -1,12 +1,10 @@
-# Worthly CBL Foundation
+# Worthly Project Foundation
 
-This document keeps the shared reasoning behind Worthly visible: why the project exists, what problem it responds to, what I want to learn, and how the current prototype fits the Challenge Based Learning process.
+This document keeps the shared reasoning behind Worthly visible in public-friendly language: why the project exists, what problem it responds to, what I wanted to learn, and how the current prototype should be evaluated.
 
-## Current CBL Focus
+## Project Focus
 
-Document, Reflect, and Share.
-
-Worthly has reached a working prototype stage. The next phase is to explain the design and coding journey clearly, validate the prototype with people, and use that evidence to decide the next iteration.
+Worthly is a working iOS prototype. The current focus is to explain the product direction clearly, test it with people, and use feedback to guide the next iteration.
 
 ## Personal Problem
 
@@ -27,23 +25,13 @@ Many people do not struggle because they have no financial data. They struggle b
 
 Worthly responds to the problem of scattered personal money visibility. It is for people who want a simple local-first map of where their money lives before they need a full budgeting, accounting, or bank-connected finance system.
 
-## Big Idea
+## Product Question
 
-Personal financial clarity.
+How might an iOS app help people understand where their money is and whether their current financial position is moving toward a goal?
 
-## Essential Question
+## Product Response
 
-How might we help people understand where their money is and whether their current financial position is moving toward a goal?
-
-## Challenge Statement
-
-Build a local-first iOS prototype that helps people create a clear money map across accounts, investments, liabilities, and transactions, then use that map to understand net worth, cashflow, and basic target readiness.
-
-## Challenge Response
-
-Worthly is the challenge response.
-
-It is an iOS app prototype that starts from an empty state and guides the user to build a first money map:
+Worthly is a local-first iOS prototype that helps users build a first money map:
 
 1. Add the first account.
 2. Add a liability or confirm no liabilities.
@@ -69,7 +57,7 @@ More specifically, I want to learn:
 - How to apply Apple-platform design patterns instead of copying static screens blindly.
 - How to build reusable SwiftUI components and organize a growing project.
 - How to model finance data carefully enough that the UI feels trustworthy.
-- How to use validation, mentor feedback, and iteration to improve both design and code.
+- How to use validation, feedback, and iteration to improve both design and code.
 
 ## Product Principles
 
@@ -81,53 +69,6 @@ More specifically, I want to learn:
 - Use native iOS patterns where possible.
 - Preserve readability over decorative effects.
 - Treat planning as educational projection, not financial advice.
-
-## CBL Journey Summary
-
-### Engage
-
-The initial interest came from confusion around personal assets and scattered financial information.
-
-The project began with a personal question: how can I quickly understand where my money is? Over time, the scope moved from a personal tracker into a broader asset-map concept for people with money spread across banks, e-wallets, investments, and liabilities.
-
-### Investigate
-
-The current prototype assumes the target users are people who:
-
-- Use more than one money storage place.
-- Need a clearer picture of net worth.
-- May have liabilities or installments.
-- Want simple clarity before advanced budgeting or automation.
-
-Evidence still needs to be strengthened through user interviews and usability tests. The current direction is based on personal experience, mentor feedback, and iterative design/coding decisions.
-
-### Act
-
-The Act phase produced a SwiftUI prototype with:
-
-- Guided onboarding.
-- Four-tab app structure.
-- Local JSON persistence.
-- Dummy data mode for demonstration.
-- Add/edit flows for assets, liabilities, investments, and transactions.
-- Planning projection engine.
-- Reusable layout and editor components.
-- Dynamic Type and contrast improvements.
-- Native iOS 26 Liquid Glass controls where appropriate.
-
-The prototype is ready to be tested with real users through task-based usability testing.
-
-### Reflect And Share
-
-The strongest learning so far is that building the UI is not the same as solving the design problem.
-
-Important shifts in thinking:
-
-- The app should not start as a dashboard full of sample data; it should guide the user from empty to meaningful.
-- A global plus button is ambiguous unless the page context explains what can be added.
-- Half-height sheets can distract from focused financial forms, so full-screen editors better support task completion.
-- Planning needs a target and a readiness answer, not only editable assumptions.
-- A personal finance app must make data meaning clear, because users may trust the numbers even when the model is still simplified.
 
 ## Current Strengths
 
@@ -184,7 +125,7 @@ Worthly is successful for this prototype phase if users can:
 ## Documentation To Capture Next
 
 - Screenshots of the final prototype.
-- Mentor feedback before and after design changes.
+- Feedback before and after design changes.
 - Usability test notes.
 - User quotes about confusion or clarity.
 - A simple user flow diagram.
@@ -196,7 +137,7 @@ Worthly is successful for this prototype phase if users can:
 
 Worthly began from my own confusion about scattered personal assets. I realized the problem was not only tracking transactions, but understanding where money actually lives across accounts, e-wallets, investments, and liabilities.
 
-Through mentor feedback and iteration, the concept shifted from a static finance dashboard into a local-first money map. I redesigned the first-run experience so users start empty and build their map step by step. I also changed ambiguous add actions into contextual actions, moved Settings out of the main tab bar, and replaced distracting partial sheets with focused full-screen editors.
+Through feedback and iteration, the concept shifted from a static finance dashboard into a local-first money map. I redesigned the first-run experience so users start empty and build their map step by step. I also changed ambiguous add actions into contextual actions, moved Settings out of the main tab bar, and replaced distracting partial sheets with focused full-screen editors.
 
 On the coding side, I learned how to grow a SwiftUI prototype beyond one large screen file. I refactored the app into feature folders, extracted reusable components, added local persistence, implemented dummy data safely, improved accessibility, and built a projection engine with unit tests.
 

@@ -65,11 +65,66 @@ The app is still a prototype, but the learning gap feels smaller now. And for th
 
 Tools used: Xcode, SwiftUI, SF Symbols, Sketch, GitHub, Simulator, and a personal AI coding assistant.
 
+## Version D: Stronger Hook / Click-Bait Style
+
+I thought my problem was money.
+
+Turns out, my real problem was visibility.
+
+I had assets spread across different places: accounts, e-wallets, investments, and liabilities. Some numbers were big enough to get my attention. Some smaller ones were easy to forget.
+
+And because everything lived in different places, it was hard to answer one simple question:
+
+Where is my money, actually?
+
+That question became the reason I built Worthly, a local-first iOS prototype for mapping assets, liabilities, transactions, and simple financial targets.
+
+But the biggest lesson was not about finance.
+
+It was about design.
+
+At first, I thought layout meant putting things in a good place.
+
+Make it neat.
+Make it balanced.
+Make it look close to the reference.
+
+Then I slowly realized layout is not only about placement. It is about helping people understand what matters, what they can do next, and where their attention should go.
+
+The moment that shifted my thinking was Apple’s Human Interface Guidelines. I used to focus on the “design” part, but I forgot the “I” stands for Interaction.
+
+That changed a lot.
+
+I started rethinking the navigation, the add buttons, the onboarding flow, and even the editor experience. One of the hardest decisions was whether financial forms should appear in a bottom sheet or a full-screen flow. I changed them into focused full-screen editors because the task needed attention, not distraction.
+
+Accessibility also became part of the product, not a checklist at the end. I worked on Dynamic Type, contrast, readable amount text, accessible labels, and clearer chart colors.
+
+For an app about money, if people cannot read it comfortably, they cannot trust it.
+
+The more I worked on Worthly, the more I learned that design is not only about making a screen look good.
+
+It is about deciding:
+
+What should be shown first?
+What should be hidden?
+What should feel easy?
+What should ask for full attention?
+What should be simplified?
+
+This project became my small practice of 改善 (kaizen): continuous improvement.
+
+Worthly is still not perfect. But that is the point.
+
+The gap is still there.
+It is just smaller now.
+
+And for this project, that progress matters more than pretending I already figured everything out.
+
 ## Notes Before Posting
 
 - Replace screenshots with final dummy-data screenshots.
 - Avoid real financial values or real account names.
 - Do not mention private family details.
-- Do not mention mentor names or private program details.
+- Do not mention private program details.
 - Keep the tone reflective and personal.
 - Review once manually to remove wording that feels too polished or unnatural.
