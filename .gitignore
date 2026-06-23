@@ -32,3 +32,8 @@ build/
 # Local app data exports
 finance-data.json
 FinanceData.json
+
+# Personal process drafts
+LINKEDIN_POST_DRAFT.md
+LINKEDIN_PROJECT_MATERIALS.md
+PROJECT_FOUNDATION.md

@@ -131,7 +131,6 @@ Not included yet:
 ## Design Notes
 
 - [DESIGN_GUIDELINES.md](DESIGN_GUIDELINES.md) documents Worthly spacing, layout, navigation, typography, color, and accessibility agreements.
-- [PROJECT_FOUNDATION.md](PROJECT_FOUNDATION.md) documents the project problem, product direction, learning objective, validation plan, and reflection notes.
 
 ## Roadmap
 
