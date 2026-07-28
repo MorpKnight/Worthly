@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ProjectionCard: View {
+    let referenceDate: Date
     let horizon: Date
     let projectedNetWorth: Decimal
 
@@ -23,13 +24,73 @@ struct ProjectionCard: View {
                     minimumScaleFactor: 0.78
                 )
 
-                Text("Estimate based on recurring salary, investment returns, and liability payments")
+                Text("From your saved net worth as of \(WorthlyDateFormatting.projectionHorizon(referenceDate))")
                     .font(.caption)
+                    .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Projected \(WorthlyDateFormatting.projectionHorizon(horizon)), \(IDRFormatting.full(projectedNetWorth))")
+        .accessibilityLabel(
+            "Projected \(WorthlyDateFormatting.projectionHorizon(horizon)), "
+                + "\(IDRFormatting.full(projectedNetWorth)), from saved net worth as of "
+                + WorthlyDateFormatting.projectionHorizon(referenceDate)
+        )
+    }
+}
+
+struct PlanningMethodCard: View {
+    @Binding var isExpanded: Bool
+
+    var body: some View {
+        WorthlySummaryCard {
+            DisclosureGroup(isExpanded: $isExpanded) {
+                VStack(alignment: .leading, spacing: WorthlySpacing.sm) {
+                    explanation(
+                        title: "Starting point",
+                        text: "Saved account and investment balances, minus remaining liabilities. Transaction history does not replace these current balances."
+                    )
+
+                    explanation(
+                        title: "Future months",
+                        text: "Adds scheduled income and investment coupons, then subtracts recurring expenses and liability payments through the selected horizon. Only future due dates are counted."
+                    )
+
+                    explanation(
+                        title: "Liabilities",
+                        text: "Each payment is split between interest and principal using the saved annual rate and remaining balance."
+                    )
+
+                    explanation(
+                        title: "Not included",
+                        text: "Taxes, inflation, market price changes, unscheduled transactions, and changes to your recurring plan."
+                    )
+                }
+                .padding(.top, WorthlySpacing.sm)
+            } label: {
+                VStack(alignment: .leading, spacing: WorthlySpacing.xxs) {
+                    Text("How this projection works")
+                        .font(.subheadline.weight(.semibold))
+
+                    Text("A planning estimate, not a guaranteed outcome")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .accessibilityHint(isExpanded ? "Collapses projection details" : "Expands projection details")
+        }
+    }
+
+    private func explanation(title: String, text: String) -> some View {
+        VStack(alignment: .leading, spacing: WorthlySpacing.xxs) {
+            Text(title)
+                .font(.caption.weight(.semibold))
+
+            Text(text)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 }
 

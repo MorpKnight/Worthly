@@ -210,6 +210,12 @@ struct HistoryTransactionEditorSheet: View {
                     Color(.secondarySystemGroupedBackground),
                     in: RoundedRectangle(cornerRadius: WorthlySpacing.xl, style: .continuous)
                 )
+
+                Text("Transactions add cashflow and history context. They don’t change the current balance saved for an account.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
     }

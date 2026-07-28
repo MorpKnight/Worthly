@@ -10,6 +10,8 @@ import Foundation
 enum WorthlyDateFormatting {
     static func projectionHorizon(_ date: Date) -> String {
         let formatter = DateFormatter()
+        formatter.calendar = .worthly
+        formatter.timeZone = Calendar.worthly.timeZone
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "MMM d yyyy"
 
@@ -18,6 +20,8 @@ enum WorthlyDateFormatting {
 
     static func historyMonthSummaryTitle(for date: Date) -> String {
         let formatter = DateFormatter()
+        formatter.calendar = .worthly
+        formatter.timeZone = Calendar.worthly.timeZone
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "MMMM"
 
@@ -25,7 +29,7 @@ enum WorthlyDateFormatting {
     }
 
     static func historySectionTitle(for date: Date, referenceDate: Date) -> String {
-        let calendar = Calendar(identifier: .gregorian)
+        let calendar = Calendar.worthly
 
         if calendar.isDate(date, inSameDayAs: referenceDate) {
             return "Today"
@@ -37,6 +41,8 @@ enum WorthlyDateFormatting {
         }
 
         let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.timeZone = calendar.timeZone
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "MMMM d"
 

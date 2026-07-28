@@ -93,6 +93,7 @@ struct SettingView: View {
             }
             .padding(.top, WorthlySpacing.xs)
             .padding(.bottom, WorthlySpacing.pageBottom)
+            .worthlyReadableContent()
         }
         .background(Color(.systemBackground))
         .navigationTitle("Settings")

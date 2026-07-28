@@ -32,7 +32,7 @@ struct AssetAccountForm: View {
 
         AssetEditorTextFieldRow(
             icon: "creditcard",
-            title: "Balance",
+            title: "Current Balance",
             placeholder: "Rp 0",
             text: $draft.balanceText,
             keyboardType: .decimalPad

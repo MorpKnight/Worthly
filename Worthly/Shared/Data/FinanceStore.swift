@@ -8,12 +8,20 @@
 import Foundation
 import Observation
 
+enum FinanceDataRecoveryStatus: Equatable {
+    case recoveredFromBackup
+    case unreadable
+}
+
 @Observable
 final class FinanceStore {
     @ObservationIgnored private let persistence: FinancePersistence
+    @ObservationIgnored private let now: () -> Date
     @ObservationIgnored private var shouldPersist = false
     @ObservationIgnored private var preservedUserSnapshot: FinanceSnapshot?
+    @ObservationIgnored private var usesLiveReferenceDate: Bool
 
+    var dataRecoveryStatus: FinanceDataRecoveryStatus?
     var referenceDate: Date {
         didSet { persistIfNeeded() }
     }
@@ -56,17 +64,46 @@ final class FinanceStore {
 
     init(
         sampleData: SampleFinanceData? = nil,
-        persistence: FinancePersistence = .shared
+        persistence: FinancePersistence = .shared,
+        now: @escaping () -> Date = { Date() }
     ) {
         self.persistence = persistence
+        self.now = now
 
-        let state = persistence.load()
+        let loadResult = persistence.loadResult()
+        let persistedState: FinancePersistenceState?
+        let initialRecoveryStatus: FinanceDataRecoveryStatus?
+
+        switch loadResult {
+        case .empty:
+            persistedState = nil
+            initialRecoveryStatus = nil
+        case .loaded(let state):
+            persistedState = state
+            initialRecoveryStatus = nil
+        case .recoveredFromBackup(let state):
+            persistedState = state
+            initialRecoveryStatus = .recoveredFromBackup
+        case .unreadable:
+            persistedState = nil
+            initialRecoveryStatus = .unreadable
+        }
+
+        let state = persistedState
             ?? FinancePersistenceState(
                 activeSnapshot: sampleData.map { FinanceSnapshot(sampleData: $0) } ?? FinanceSnapshot.empty()
             )
         let snapshot = state.activeSnapshot
-        referenceDate = snapshot.referenceDate
-        projectionHorizon = snapshot.projectionHorizon
+        dataRecoveryStatus = initialRecoveryStatus
+        usesLiveReferenceDate = persistedState != nil
+            ? !state.isDummyDataEnabled
+            : sampleData == nil
+        let resolvedReferenceDate = usesLiveReferenceDate ? now() : snapshot.referenceDate
+        referenceDate = resolvedReferenceDate
+        projectionHorizon = Self.validProjectionHorizon(
+            snapshot.projectionHorizon,
+            for: resolvedReferenceDate
+        )
         accounts = snapshot.accounts
         transactions = snapshot.transactions
         sbnInvestments = snapshot.sbnInvestments
@@ -80,6 +117,10 @@ final class FinanceStore {
         preservedUserSnapshot = state.preservedUserSnapshot
         isDummyDataEnabled = state.isDummyDataEnabled
         shouldPersist = true
+
+        if initialRecoveryStatus == .recoveredFromBackup {
+            persistence.save(persistenceState)
+        }
     }
 
     var liquidAssets: Decimal {
@@ -280,6 +321,64 @@ final class FinanceStore {
         hasCompletedOnboarding = true
     }
 
+    func refreshReferenceDate() {
+        guard usesLiveReferenceDate else {
+            return
+        }
+
+        let refreshedReferenceDate = now()
+        let refreshedProjectionHorizon = Self.validProjectionHorizon(
+            projectionHorizon,
+            for: refreshedReferenceDate
+        )
+        let horizonChanged = refreshedProjectionHorizon != projectionHorizon
+        let wasPersisting = shouldPersist
+
+        shouldPersist = false
+        referenceDate = refreshedReferenceDate
+        projectionHorizon = refreshedProjectionHorizon
+        shouldPersist = wasPersisting
+
+        if wasPersisting && horizonChanged {
+            persistence.save(persistenceState)
+        }
+    }
+
+    func dismissDataRecoveryNotice() {
+        guard dataRecoveryStatus == .recoveredFromBackup else {
+            return
+        }
+
+        dataRecoveryStatus = nil
+    }
+
+    func retryLoadingData() {
+        switch persistence.loadResult() {
+        case .empty:
+            dataRecoveryStatus = nil
+            resetToEmptyData()
+        case .loaded(let state):
+            applyPersistenceState(state)
+            dataRecoveryStatus = nil
+        case .recoveredFromBackup(let state):
+            applyPersistenceState(state)
+            dataRecoveryStatus = .recoveredFromBackup
+            persistence.save(persistenceState)
+        case .unreadable:
+            dataRecoveryStatus = .unreadable
+        }
+    }
+
+    func resetUnreadableData() {
+        guard dataRecoveryStatus == .unreadable else {
+            return
+        }
+
+        persistence.deleteSavedData()
+        dataRecoveryStatus = nil
+        resetToEmptyData()
+    }
+
     func setDummyDataEnabled(_ isEnabled: Bool) {
         isEnabled ? enableDummyData() : disableDummyData()
     }
@@ -293,6 +392,7 @@ final class FinanceStore {
         let dummySnapshot = FinanceSnapshot(sampleData: .current)
 
         shouldPersist = false
+        usesLiveReferenceDate = false
         applySnapshot(dummySnapshot)
         preservedUserSnapshot = userSnapshot
         isDummyDataEnabled = true
@@ -311,6 +411,8 @@ final class FinanceStore {
         applySnapshot(restoredSnapshot)
         preservedUserSnapshot = nil
         isDummyDataEnabled = false
+        usesLiveReferenceDate = true
+        refreshReferenceDate()
         shouldPersist = true
         persistence.save(persistenceState)
     }
@@ -339,7 +441,6 @@ final class FinanceStore {
 
     func addTransaction(_ transaction: FinanceTransaction) {
         transactions.append(transaction)
-        applyBalanceEffect(of: transaction)
     }
 
     func updateTransaction(_ transaction: FinanceTransaction) {
@@ -347,14 +448,12 @@ final class FinanceStore {
             return
         }
 
-        let oldTransaction = transactions[index]
-        applyBalanceEffect(of: oldTransaction, multiplier: -1)
         transactions[index] = transaction
-        applyBalanceEffect(of: transaction)
     }
 
     func resetToSampleData(_ sampleData: SampleFinanceData = .current) {
         shouldPersist = false
+        usesLiveReferenceDate = false
         applySnapshot(FinanceSnapshot(sampleData: sampleData))
         preservedUserSnapshot = nil
         isDummyDataEnabled = false
@@ -364,7 +463,8 @@ final class FinanceStore {
 
     func resetToEmptyData() {
         shouldPersist = false
-        applySnapshot(FinanceSnapshot.empty())
+        usesLiveReferenceDate = true
+        applySnapshot(FinanceSnapshot.empty(referenceDate: now()))
         preservedUserSnapshot = nil
         isDummyDataEnabled = false
         shouldPersist = true
@@ -372,7 +472,7 @@ final class FinanceStore {
     }
 
     func isInReferenceMonth(_ date: Date) -> Bool {
-        let calendar = Calendar(identifier: .gregorian)
+        let calendar = Calendar.worthly
         let referenceComponents = calendar.dateComponents([.year, .month], from: referenceDate)
         let dateComponents = calendar.dateComponents([.year, .month], from: date)
 
@@ -428,45 +528,45 @@ final class FinanceStore {
         hasCompletedOnboarding = snapshot.hasCompletedOnboarding
     }
 
+    private func applyPersistenceState(_ state: FinancePersistenceState) {
+        let wasPersisting = shouldPersist
+
+        shouldPersist = false
+        usesLiveReferenceDate = !state.isDummyDataEnabled
+        applySnapshot(state.activeSnapshot)
+        preservedUserSnapshot = state.preservedUserSnapshot
+        isDummyDataEnabled = state.isDummyDataEnabled
+
+        if usesLiveReferenceDate {
+            refreshReferenceDate()
+        }
+
+        shouldPersist = wasPersisting
+    }
+
     private func absolute(_ amount: Decimal) -> Decimal {
         amount < 0 ? -amount : amount
     }
 
-    private func applyBalanceEffect(of transaction: FinanceTransaction, multiplier: Decimal = 1) {
-        switch transaction.type {
-        case .income:
-            adjustAccountBalance(
-                accountID: transaction.accountID,
-                amount: transaction.amount * multiplier
-            )
-        case .outcome:
-            adjustAccountBalance(
-                accountID: transaction.accountID,
-                amount: -transaction.amount * multiplier
-            )
-        case .account:
-            guard let destinationAccountID = transaction.destinationAccountID,
-                  destinationAccountID != transaction.accountID else {
-                return
-            }
-
-            adjustAccountBalance(
-                accountID: transaction.accountID,
-                amount: -transaction.amount * multiplier
-            )
-            adjustAccountBalance(
-                accountID: destinationAccountID,
-                amount: transaction.amount * multiplier
-            )
-        }
-    }
-
-    private func adjustAccountBalance(accountID: UUID, amount: Decimal) {
-        guard amount != 0,
-              let index = accounts.firstIndex(where: { $0.id == accountID }) else {
-            return
+    private static func validProjectionHorizon(
+        _ projectionHorizon: Date,
+        for referenceDate: Date,
+        calendar: Calendar = .worthly
+    ) -> Date {
+        guard projectionHorizon < referenceDate else {
+            return projectionHorizon
         }
 
-        accounts[index].balance += amount
+        let year = calendar.component(.year, from: referenceDate)
+
+        return DateComponents(
+            calendar: calendar,
+            timeZone: calendar.timeZone,
+            year: year,
+            month: 12,
+            day: 31,
+            hour: 23,
+            minute: 59
+        ).date ?? referenceDate
     }
 }

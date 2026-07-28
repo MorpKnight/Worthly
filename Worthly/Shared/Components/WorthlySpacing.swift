@@ -25,4 +25,14 @@ enum WorthlySpacing {
     static let rowSeparatorWithIcon: CGFloat = 44
     static let transactionSeparator: CGFloat = 56
     static let pageBottom: CGFloat = 40
+
+    static let readableContentMaxWidth: CGFloat = 720
+    static let editorContentMaxWidth: CGFloat = 680
+}
+
+extension View {
+    func worthlyReadableContent(maxWidth: CGFloat = WorthlySpacing.readableContentMaxWidth) -> some View {
+        frame(maxWidth: maxWidth)
+            .frame(maxWidth: .infinity)
+    }
 }

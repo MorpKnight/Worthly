@@ -141,6 +141,7 @@ struct AssetView: View {
             .padding(.horizontal, WorthlySpacing.screenHorizontal)
             .padding(.top, WorthlySpacing.xs)
             .padding(.bottom, WorthlySpacing.pageBottom)
+            .worthlyReadableContent()
         }
         .background(Color(.systemBackground))
         .navigationTitle("Assets")

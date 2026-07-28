@@ -9,11 +9,16 @@ import SwiftUI
 
 struct HomeView: View {
     let store: FinanceStore
+    let onOpenPlanning: () -> Void
 
-    @State private var activeAddRoute: OverviewAddRoute?
+    @State private var activeEditorRoute: OverviewEditorRoute?
 
-    init(store: FinanceStore = FinanceStore()) {
+    init(
+        store: FinanceStore = FinanceStore(),
+        onOpenPlanning: @escaping () -> Void = {}
+    ) {
         self.store = store
+        self.onOpenPlanning = onOpenPlanning
     }
 
     private var showsGuidedSetup: Bool {
@@ -43,10 +48,10 @@ struct HomeView: View {
                         hasAccount: !store.accounts.isEmpty,
                         hasLiabilityAnswer: !store.debts.isEmpty || store.hasAnsweredLiabilitySetup,
                         hasInvestment: !store.sbnInvestments.isEmpty,
-                        onAddAccount: { activeAddRoute = .account },
-                        onAddLiability: { activeAddRoute = .liability },
+                        onAddAccount: { activeEditorRoute = .account },
+                        onAddLiability: { activeEditorRoute = .liability },
                         onConfirmNoLiabilities: { store.confirmNoLiabilities() },
-                        onAddInvestment: { activeAddRoute = .investment }
+                        onAddInvestment: { activeEditorRoute = .investment }
                     )
                 }
 
@@ -70,16 +75,21 @@ struct HomeView: View {
 
                         VStack(spacing: 0) {
                             ForEach(store.recentTransactions.prefix(5)) { transaction in
-                                WorthlyTransactionRow(
-                                    icon: transaction.displayIcon,
-                                    title: transaction.category,
-                                    subtitle: transaction.subtitle(
-                                        accountName: store.accountName(for: transaction.accountID),
-                                        destinationAccountName: store.destinationAccountName(for: transaction)
-                                    ),
-                                    amount: transaction.displayAmount,
-                                    iconTint: transaction.displayTint
-                                )
+                                Button {
+                                    activeEditorRoute = .editTransaction(transaction.id)
+                                } label: {
+                                    WorthlyTransactionRow(
+                                        icon: transaction.displayIcon,
+                                        title: transaction.category,
+                                        subtitle: transaction.subtitle(
+                                            accountName: store.accountName(for: transaction.accountID),
+                                            destinationAccountName: store.destinationAccountName(for: transaction)
+                                        ),
+                                        amount: transaction.displayAmount,
+                                        iconTint: transaction.displayTint
+                                    )
+                                }
+                                .buttonStyle(.plain)
                             }
                         }
                     }
@@ -88,6 +98,7 @@ struct HomeView: View {
             .padding(.horizontal, WorthlySpacing.screenHorizontal)
             .padding(.top, WorthlySpacing.xs)
             .padding(.bottom, WorthlySpacing.pageBottom)
+            .worthlyReadableContent()
         }
         .background(Color(.systemBackground))
         .navigationTitle("Overview")
@@ -107,21 +118,27 @@ struct HomeView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button {
-                        activeAddRoute = .account
+                        activeEditorRoute = .account
                     } label: {
                         Label("Account", systemImage: "wallet.pass")
                     }
 
                     Button {
-                        activeAddRoute = .transaction
+                        activeEditorRoute = .transaction
                     } label: {
                         Label("Transaction", systemImage: "list.bullet.rectangle")
                     }
 
                     Button {
-                        activeAddRoute = .liability
+                        activeEditorRoute = .liability
                     } label: {
                         Label("Liability", systemImage: "creditcard")
+                    }
+
+                    Button {
+                        activeEditorRoute = .investment
+                    } label: {
+                        Label("Investment", systemImage: "percent")
                     }
                 } label: {
                     WorthlyToolbarIconLabel(systemImage: "plus")
@@ -131,13 +148,13 @@ struct HomeView: View {
                 .accessibilityLabel("Add")
             }
         }
-        .fullScreenCover(item: $activeAddRoute) { route in
+        .fullScreenCover(item: $activeEditorRoute) { route in
             editorView(for: route)
         }
     }
 
     @ViewBuilder
-    private func editorView(for route: OverviewAddRoute) -> some View {
+    private func editorView(for route: OverviewEditorRoute) -> some View {
         switch route {
         case .account:
             AddAssetEditorSheet(
@@ -177,6 +194,18 @@ struct HomeView: View {
                 onSaveInvestment: { store.addInvestment($0) },
                 onSaveDebt: { _ in }
             )
+        case .editTransaction(let transactionID):
+            if let transaction = store.transactions.first(where: { $0.id == transactionID }) {
+                HistoryTransactionEditorSheet(
+                    mode: .edit,
+                    transaction: transaction,
+                    accounts: store.accounts,
+                    referenceDate: store.referenceDate,
+                    onSave: { store.updateTransaction($0) }
+                )
+            } else {
+                HistoryMissingTransactionSheet()
+            }
         }
     }
 
@@ -190,21 +219,40 @@ struct HomeView: View {
                 : WorthlyAccessibleColor.positive
         )
 
-        MetricCard(
-            title: "View Planning",
-            value: IDRFormatting.compact(store.projectedNetWorth),
-            valueColor: .primary
-        )
+        Button(action: onOpenPlanning) {
+            MetricCard(
+                title: "View Planning",
+                value: IDRFormatting.compact(store.projectedNetWorth),
+                valueColor: .primary,
+                showsDisclosure: true
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint("Opens the Planning tab")
     }
 }
 
-private enum OverviewAddRoute: String, Identifiable {
+private enum OverviewEditorRoute: Identifiable {
     case account
     case transaction
     case liability
     case investment
+    case editTransaction(UUID)
 
-    var id: String { rawValue }
+    var id: String {
+        switch self {
+        case .account:
+            "account"
+        case .transaction:
+            "transaction"
+        case .liability:
+            "liability"
+        case .investment:
+            "investment"
+        case .editTransaction(let transactionID):
+            "edit-transaction-\(transactionID.uuidString)"
+        }
+    }
 }
 
 private struct NetWorthCard: View {
@@ -364,12 +412,24 @@ private struct MetricCard: View {
     let title: String
     let value: String
     let valueColor: Color
+    var showsDisclosure = false
 
     var body: some View {
         WorthlySummaryCard(minHeight: 98) {
             VStack(alignment: .leading, spacing: WorthlySpacing.lg) {
-                Text(title)
-                    .font(.subheadline)
+                HStack(spacing: WorthlySpacing.xs) {
+                    Text(title)
+                        .font(.subheadline)
+
+                    Spacer(minLength: WorthlySpacing.xs)
+
+                    if showsDisclosure {
+                        Image(systemName: "chevron.right")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .accessibilityHidden(true)
+                    }
+                }
 
                 WorthlyAmountText(
                     text: value,

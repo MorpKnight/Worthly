@@ -136,25 +136,65 @@ struct FinanceSnapshot: Codable {
 }
 
 struct FinancePersistenceState: Codable {
+    static let currentSchemaVersion = 2
+
+    var schemaVersion: Int
     var activeSnapshot: FinanceSnapshot
     var preservedUserSnapshot: FinanceSnapshot?
     var isDummyDataEnabled: Bool
 
+    enum CodingKeys: String, CodingKey {
+        case schemaVersion
+        case activeSnapshot
+        case preservedUserSnapshot
+        case isDummyDataEnabled
+    }
+
     init(
+        schemaVersion: Int = Self.currentSchemaVersion,
         activeSnapshot: FinanceSnapshot,
         preservedUserSnapshot: FinanceSnapshot? = nil,
         isDummyDataEnabled: Bool = false
     ) {
+        self.schemaVersion = schemaVersion
         self.activeSnapshot = activeSnapshot
         self.preservedUserSnapshot = preservedUserSnapshot
         self.isDummyDataEnabled = isDummyDataEnabled
     }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        schemaVersion = try container.decodeIfPresent(Int.self, forKey: .schemaVersion) ?? 1
+        activeSnapshot = try container.decode(FinanceSnapshot.self, forKey: .activeSnapshot)
+        preservedUserSnapshot = try container.decodeIfPresent(
+            FinanceSnapshot.self,
+            forKey: .preservedUserSnapshot
+        )
+        isDummyDataEnabled = try container.decodeIfPresent(
+            Bool.self,
+            forKey: .isDummyDataEnabled
+        ) ?? false
+    }
+}
+
+enum FinancePersistenceLoadResult {
+    case empty
+    case loaded(FinancePersistenceState)
+    case recoveredFromBackup(FinancePersistenceState)
+    case unreadable
 }
 
 struct FinancePersistence {
     static let shared = FinancePersistence()
 
     private let fileURL: URL
+
+    private var backupFileURL: URL {
+        fileURL
+            .deletingPathExtension()
+            .appendingPathExtension("backup.json")
+    }
 
     init(fileURL: URL? = nil) {
         if let fileURL {
@@ -170,23 +210,22 @@ struct FinancePersistence {
         }
     }
 
-    func load() -> FinancePersistenceState? {
-        guard let data = try? Data(contentsOf: fileURL) else {
-            return nil
-        }
-
+    func loadResult() -> FinancePersistenceLoadResult {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
 
-        if let state = try? decoder.decode(FinancePersistenceState.self, from: data) {
-            return state
+        if let state = decodeState(at: fileURL, using: decoder) {
+            return .loaded(state)
         }
 
-        if let snapshot = try? decoder.decode(FinanceSnapshot.self, from: data) {
-            return FinancePersistenceState(activeSnapshot: snapshot)
+        if let state = decodeState(at: backupFileURL, using: decoder) {
+            return .recoveredFromBackup(state)
         }
 
-        return nil
+        let hasSavedData = FileManager.default.fileExists(atPath: fileURL.path)
+            || FileManager.default.fileExists(atPath: backupFileURL.path)
+
+        return hasSavedData ? .unreadable : .empty
     }
 
     func save(_ state: FinancePersistenceState) {
@@ -205,6 +244,7 @@ struct FinancePersistence {
                 withIntermediateDirectories: true
             )
             try data.write(to: fileURL, options: [.atomic])
+            try data.write(to: backupFileURL, options: [.atomic])
         } catch {
             assertionFailure("Failed to save finance data: \(error)")
         }
@@ -212,5 +252,25 @@ struct FinancePersistence {
 
     func deleteSavedData() {
         try? FileManager.default.removeItem(at: fileURL)
+        try? FileManager.default.removeItem(at: backupFileURL)
+    }
+
+    private func decodeState(
+        at url: URL,
+        using decoder: JSONDecoder
+    ) -> FinancePersistenceState? {
+        guard let data = try? Data(contentsOf: url) else {
+            return nil
+        }
+
+        if let state = try? decoder.decode(FinancePersistenceState.self, from: data) {
+            return state
+        }
+
+        if let snapshot = try? decoder.decode(FinanceSnapshot.self, from: data) {
+            return FinancePersistenceState(activeSnapshot: snapshot)
+        }
+
+        return nil
     }
 }

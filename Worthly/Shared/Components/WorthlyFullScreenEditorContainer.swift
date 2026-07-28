@@ -82,6 +82,7 @@ struct WorthlyFullScreenEditorContainer<Content: View>: View {
             .scrollIndicators(.hidden)
         }
         .padding(.horizontal, WorthlySpacing.sheetHorizontal)
+        .frame(maxWidth: WorthlySpacing.editorContentMaxWidth)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(.systemBackground))
     }

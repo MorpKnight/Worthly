@@ -38,6 +38,7 @@ struct OnboardingView: View {
             .padding(.horizontal, WorthlySpacing.screenHorizontal)
             .padding(.top, WorthlySpacing.xxxl)
             .padding(.bottom, WorthlySpacing.pageBottom)
+            .worthlyReadableContent()
         }
         .background(Color(.systemBackground))
         .fullScreenCover(item: $activeEditor) { editor in
@@ -76,7 +77,7 @@ struct OnboardingView: View {
                 systemImage: "wallet.pass",
                 eyebrow: step.progressText,
                 title: "Add your first account",
-                message: "Start with one place where your money lives, like a bank, e-wallet, or cash account.",
+                message: "Start with one place where your money lives, like a bank, e-wallet, or cash account, and enter its current balance.",
                 primaryTitle: store.accounts.isEmpty ? "Add first account" : "Continue",
                 primarySystemImage: store.accounts.isEmpty ? "plus" : "arrow.right",
                 primaryAction: {
@@ -85,7 +86,10 @@ struct OnboardingView: View {
                     } else {
                         step = .liability
                     }
-                }
+                },
+                secondaryTitle: "Explore Sample Data",
+                secondarySystemImage: "sparkles",
+                secondaryAction: { store.enableDummyData() }
             )
         case .liability:
             OnboardingStepContent(
@@ -124,7 +128,7 @@ struct OnboardingView: View {
                 systemImage: "list.bullet.rectangle",
                 eyebrow: step.progressText,
                 title: "Add your first transaction",
-                message: "A transaction gives Overview its first cashflow signal. You can also add it later and start from your asset map.",
+                message: "A transaction gives Overview its first cashflow signal without changing the current account balance you entered. You can also add it later.",
                 primaryTitle: "Add transaction",
                 primarySystemImage: "plus",
                 primaryAction: { activeEditor = .transaction },

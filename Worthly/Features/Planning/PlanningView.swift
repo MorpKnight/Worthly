@@ -14,6 +14,7 @@ struct PlanningView: View {
 
     @State private var activeEditor: PlanningEditor?
     @State private var showsProjectionCalendar = false
+    @State private var showsProjectionMethod = false
 
     init(store: FinanceStore = FinanceStore()) {
         self.store = store
@@ -84,6 +85,7 @@ struct PlanningView: View {
             VStack(alignment: .leading, spacing: WorthlySpacing.sm) {
                 if store.hasStartedMoneyMap {
                     ProjectionCard(
+                        referenceDate: store.referenceDate,
                         horizon: store.projectionHorizon,
                         projectedNetWorth: projectedNetWorth
                     )
@@ -99,6 +101,8 @@ struct PlanningView: View {
                     )
 
                     PlanningMonthlyBreakdownCard(summary: planningProjection)
+
+                    PlanningMethodCard(isExpanded: $showsProjectionMethod)
                 } else {
                     PlanningEmptyStateCard()
                 }
@@ -185,6 +189,7 @@ struct PlanningView: View {
             .padding(.horizontal, WorthlySpacing.screenHorizontal)
             .padding(.top, WorthlySpacing.xs)
             .padding(.bottom, WorthlySpacing.pageBottom)
+            .worthlyReadableContent()
         }
         .background(Color(.systemBackground))
         .navigationTitle("Planning")
